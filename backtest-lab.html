@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--surface:#13161d;--surface2:#1a1e28;--surface3:#222736;
+  --border:#2a2f3d;--border2:#333849;
+  --accent:#4f8ef7;--accent2:#6ba3ff;
+  --green:#3ecf8e;--amber:#f5a623;--red:#f06060;--purple:#c792ea;
+  --text:#e8ecf5;--text2:#8b92a8;--text3:#5a6078;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
+
+/* ── Header ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;}
+.header-brand{display:flex;align-items:center;gap:10px;}
+.header-logo{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;}
+.header-title{font-size:14px;font-weight:600;letter-spacing:-0.01em;}
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:6px 14px;border-radius:6px;border:1px solid transparent;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);background:transparent;transition:all .15s;text-decoration:none;}
+.nav-tab:hover{color:var(--text);background:var(--surface2);}
+.nav-tab.active{color:var(--accent);background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.25);}
+
+/* ── Layout ── */
+.workspace{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 52px);gap:1px;background:var(--border);}
+.sidebar{background:var(--bg);padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;}
+.main{background:var(--bg);padding:20px;overflow-y:auto;}
+
+/* ── Section headers ── */
+.section-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+
+/* ── Form controls ── */
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;color:var(--text2);font-weight:500;}
+.inp{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 10px;width:100%;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:var(--accent);}
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sel-inp{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:12px;padding:7px 10px;width:100%;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+.sel-inp:focus{border-color:var(--accent);}
+
+/* ── Strategy JSON paste area ── */
+.json-area{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:10px;width:100%;min-height:120px;resize:vertical;outline:none;transition:border-color .15s;line-height:1.5;}
+.json-area:focus{border-color:var(--accent);color:var(--text);}
+.json-status{font-size:10px;margin-top:4px;}
+.json-status.ok{color:var(--green);}
+.json-status.err{color:var(--red);}
+
+/* ── Buttons ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent;white-space:nowrap;width:100%;}
+.btn-primary{background:var(--accent);color:white;}
+.btn-primary:hover:not(:disabled){background:var(--accent2);}
+.btn-primary:disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed;}
+.btn-ghost{background:transparent;border-color:var(--border2);color:var(--text2);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Quick symbols ── */
+.symbol-pills{display:flex;flex-wrap:wrap;gap:4px;}
+.sym-pill{font-size:11px;font-weight:600;font-family:var(--mono);padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .1s;}
+.sym-pill:hover,.sym-pill.active{background:rgba(79,142,247,.12);border-color:var(--accent);color:var(--accent);}
+
+/* ── Divider ── */
+.divider{height:1px;background:var(--border);margin:4px 0;}
+
+/* ── Empty state ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;gap:12px;color:var(--text3);}
+.empty-icon{font-size:40px;opacity:.3;}
+.empty-title{font-size:14px;font-weight:500;color:var(--text2);}
+.empty-sub{font-size:12px;text-align:center;max-width:280px;line-height:1.6;}
+
+/* ── Results ── */
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.results-title{font-size:15px;font-weight:600;}
+.results-meta{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;font-family:var(--mono);}
+.badge-green{background:rgba(62,207,142,.12);color:var(--green);border:1px solid rgba(62,207,142,.25);}
+.badge-red{background:rgba(240,96,96,.12);color:var(--red);border:1px solid rgba(240,96,96,.25);}
+.badge-amber{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.25);}
+.badge-blue{background:rgba(79,142,247,.12);color:var(--accent);border:1px solid rgba(79,142,247,.25);}
+
+/* ── Metric cards ── */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.metric-card.highlight{border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.04);}
+.metric-label{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.03em;margin-bottom:6px;}
+.metric-value{font-size:20px;font-weight:600;font-family:var(--mono);letter-spacing:-0.02em;}
+.metric-value.pos{color:var(--green);}
+.metric-value.neg{color:var(--red);}
+.metric-value.neu{color:var(--text);}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--mono);}
+
+/* ── Charts ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;}
+.chart-card.full{grid-column:1/-1;}
+.chart-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:12px;letter-spacing:.02em;}
+.chart-wrap{position:relative;height:180px;}
+
+/* ── Exit breakdown ── */
+.breakdown-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.breakdown-row:last-child{border:none;}
+.breakdown-label{font-size:12px;color:var(--text2);flex:1;}
+.breakdown-bar-wrap{flex:2;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.breakdown-bar{height:100%;border-radius:3px;transition:width .5s;}
+.breakdown-count{font-size:11px;font-family:var(--mono);color:var(--text3);width:30px;text-align:right;}
+
+/* ── Trade table ── */
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+thead th{background:var(--surface);padding:10px 12px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.05em;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:9px 12px;font-family:var(--mono);color:var(--text2);white-space:nowrap;}
+.td-pos{color:var(--green);}
+.td-neg{color:var(--red);}
+.reason-pill{display:inline-flex;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;}
+.reason-signal{background:rgba(79,142,247,.12);color:var(--accent);}
+.reason-stop{background:rgba(240,96,96,.12);color:var(--red);}
+.reason-tp{background:rgba(62,207,142,.12);color:var(--green);}
+
+/* ── Error banner ── */
+.error-banner{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.25);border-radius:8px;padding:14px 16px;color:var(--red);font-size:12px;display:flex;align-items:center;gap:10px;}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">S</div>
+    <span class="header-title">Strategy Builder</span>
+    <nav class="nav-tabs" style="margin-left:24px;">
+      <a class="nav-tab" href="strategy-builder.html">Designer</a>
+      <a class="nav-tab active" href="#">Backtest Lab</a>
+    </nav>
+  </div>
+  <span style="font-size:11px;color:var(--text3);font-family:var(--mono);">Connected to localhost:8000</span>
+</div>
+
+<div class="workspace">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+
+    <div>
+      <div class="section-label">Symbol</div>
+      <div class="field">
+        <input id="symbol" class="inp" type="text" value="SPY" placeholder="e.g. AAPL, SPY, NVDA" style="text-transform:uppercase;font-weight:600;font-size:14px;">
+      </div>
+      <div class="symbol-pills" style="margin-top:8px;">
+        <button class="sym-pill" onclick="setSymbol('SPY')">SPY</button>
+        <button class="sym-pill" onclick="setSymbol('QQQ')">QQQ</button>
+        <button class="sym-pill" onclick="setSymbol('AAPL')">AAPL</button>
+        <button class="sym-pill" onclick="setSymbol('NVDA')">NVDA</button>
+        <button class="sym-pill" onclick="setSymbol('TSLA')">TSLA</button>
+        <button class="sym-pill" onclick="setSymbol('MSFT')">MSFT</button>
+        <button class="sym-pill" onclick="setSymbol('AMZN')">AMZN</button>
+        <button class="sym-pill" onclick="setSymbol('META')">META</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-label">Date Range</div>
+      <div class="inp-row">
+        <div class="field">
+          <label>Start</label>
+          <input id="startDate" class="inp" type="date" value="2024-01-01">
+        </div>
+        <div class="field">
+          <label>End</label>
+          <input id="endDate" class="inp" type="date" value="2026-05-31">
+        </div>
+      </div>
+      <div class="symbol-pills" style="margin-top:8px;">
+        <button class="sym-pill" onclick="setDates(1)">1Y</button>
+        <button class="sym-pill" onclick="setDates(2)">2Y</button>
+        <button class="sym-pill" onclick="setDates(3)">3Y</button>
+        <button class="sym-pill" onclick="setDates(5)">5Y</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-label">Capital & Sizing</div>
+      <div class="inp-row">
+        <div class="field">
+          <label>Initial Capital ($)</label>
+          <input id="capital" class="inp" type="number" value="10000" min="100">
+        </div>
+        <div class="field">
+          <label>Timeframe</label>
+          <select id="timeframe" class="sel-inp">
+            <option value="1Hour" selected>1 Hour</option>
+            <option value="1Day">1 Day</option>
+            <option value="15Min">15 Min</option>
+          </select>
+        </div>
+      </div>
+      <div class="inp-row" style="margin-top:8px;">
+        <div class="field">
+          <label>Position Sizing</label>
+          <select id="positionSizing" class="sel-inp">
+            <option value="fixed" selected>Fixed (honest)</option>
+            <option value="compounding">Compounding</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Commission (%)</label>
+          <input id="commission" class="inp" type="number" value="0.1" step="0.01" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Strategy JSON</span>
+        <button class="sym-pill" onclick="loadDefault()" style="text-transform:none;font-family:var(--sans);font-size:10px;">Load example</button>
+      </div>
+      <textarea id="strategyJson" class="json-area" placeholder='Paste strategy JSON here, or click "Load example"...' oninput="validateJson()"></textarea>
+      <div id="jsonStatus" class="json-status"></div>
+    </div>
+
+    <button id="runBtn" class="btn btn-primary" onclick="runBacktest()" disabled>
+      Run Backtest
+    </button>
+
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="main" id="mainContent">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">⬡</div>
+      <div class="empty-title">No backtest run yet</div>
+      <div class="empty-sub">Configure your symbol, date range, and strategy on the left — then click Run Backtest to see results.</div>
+    </div>
+
+    <div id="loadingState" style="display:none;" class="empty-state">
+      <div style="width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;"></div>
+      <div class="empty-title" id="loadingText">Fetching price data...</div>
+      <div class="empty-sub" id="loadingSub">This may take a few seconds</div>
+    </div>
+
+    <div id="resultsState" style="display:none;">
+
+      <!-- Header -->
+      <div class="results-header">
+        <div>
+          <div class="results-title" id="resultsTitle">—</div>
+          <div class="results-meta" id="resultsMeta">—</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;" id="resultsBadges"></div>
+      </div>
+
+      <!-- Metric cards -->
+      <div class="metrics-grid" id="metricsGrid"></div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card full">
+          <div class="chart-title">EQUITY CURVE</div>
+          <div class="chart-wrap"><canvas id="equityChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">DRAWDOWN</div>
+          <div class="chart-wrap"><canvas id="drawdownChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">EXIT BREAKDOWN</div>
+          <div id="exitBreakdown" style="padding-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Approve section -->
+      <div id="approveSection"></div>
+
+      <!-- Trade log -->
+      <div style="margin-bottom:12px;margin-top:16px;">
+        <div class="section-label">Trade Log</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Entry Time</th>
+              <th>Exit Time</th>
+              <th>Entry $</th>
+              <th>Exit $</th>
+              <th>Shares</th>
+              <th>P&L $</th>
+              <th>P&L %</th>
+              <th>Bars</th>
+              <th>Exit Reason</th>
+            </tr>
+          </thead>
+          <tbody id="tradeTableBody"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div id="errorState" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+let equityChartInst = null;
+let drawdownChartInst = null;
+
+// ─── Symbol & Date helpers ────────────────────────────────────────────────────
+function setSymbol(sym) {
+  document.getElementById('symbol').value = sym;
+  document.querySelectorAll('.sym-pill').forEach(p => {
+    if (p.textContent === sym) p.classList.add('active');
+    else p.classList.remove('active');
+  });
+}
+
+function setDates(years) {
+  const end = new Date();
+  const start = new Date();
+  start.setFullYear(end.getFullYear() - years);
+  document.getElementById('startDate').value = start.toISOString().split('T')[0];
+  document.getElementById('endDate').value   = end.toISOString().split('T')[0];
+}
+
+// ─── JSON validation ──────────────────────────────────────────────────────────
+function validateJson() {
+  const raw = document.getElementById('strategyJson').value.trim();
+  const status = document.getElementById('jsonStatus');
+  const runBtn = document.getElementById('runBtn');
+
+  if (!raw) {
+    status.textContent = '';
+    runBtn.disabled = true;
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed.strategy_name) throw new Error('Missing strategy_name');
+    if (!parsed.indicators)    throw new Error('Missing indicators');
+    if (!parsed.conditions)    throw new Error('Missing conditions');
+    if (!parsed.entry_rules)   throw new Error('Missing entry_rules');
+    if (!parsed.exit_rules)    throw new Error('Missing exit_rules');
+    status.className = 'json-status ok';
+    status.textContent = '✓ Valid strategy JSON';
+    runBtn.disabled = false;
+    return parsed;
+  } catch (e) {
+    status.className = 'json-status err';
+    status.textContent = '✗ ' + e.message;
+    runBtn.disabled = true;
+    return null;
+  }
+}
+
+// ─── Load example strategy ────────────────────────────────────────────────────
+function loadDefault() {
+  const example = {
+    schema_version: "1.0",
+    strategy_name: "Trend Pullback RSI",
+    indicators: {
+      sma200: {type:"SMA", params:{period:200, source:"close"}},
+      sma50:  {type:"SMA", params:{period:50,  source:"close"}},
+      rsi14:  {type:"RSI", params:{period:14,  source:"close"}},
+      price:  {type:"PRICE", params:{source:"close"}}
+    },
+    conditions: {
+      e1: {left:"price",  operator:">",           right:{type:"indicator", ref:"sma200"}},
+      e2: {left:"price",  operator:">",           right:{type:"indicator", ref:"sma50"}},
+      e3: {left:"rsi14",  operator:"cross_above", right:{type:"scalar", value:40}},
+      x1: {left:"rsi14",  operator:">",           right:{type:"scalar", value:70}},
+      x2: {left:"price",  operator:"<",           right:{type:"indicator", ref:"sma200"}}
+    },
+    entry_rules: {logic:"AND", conditions:["e1","e2","e3"]},
+    exit_rules:  {logic:"OR",  conditions:["x1","x2"]},
+    risk_rules: {
+      stop_loss:     {type:"percent", value:4},
+      take_profit:   {type:"percent", value:12},
+      position_size: {type:"percent_of_capital", value:10},
+      max_open_positions: 1
+    }
+  };
+  document.getElementById('strategyJson').value = JSON.stringify(example, null, 2);
+  validateJson();
+}
+
+// ─── Run backtest ─────────────────────────────────────────────────────────────
+async function runBacktest() {
+  const strategy = validateJson();
+  if (!strategy) return;
+
+  const strategyId = localStorage.getItem('pending_strategy_id') || null;
+
+  const payload = {
+    strategy,
+    symbol:           document.getElementById('symbol').value.toUpperCase().trim(),
+    start_date:       document.getElementById('startDate').value,
+    end_date:         document.getElementById('endDate').value,
+    initial_capital:  parseFloat(document.getElementById('capital').value),
+    commission_pct:   parseFloat(document.getElementById('commission').value),
+    slippage_pct:     0.05,
+    timeframe:        document.getElementById('timeframe').value,
+    position_sizing:  document.getElementById('positionSizing').value,
+  };
+
+  // Use registry endpoint if strategy was saved to registry
+  if (strategyId) {
+    payload.strategy_id = strategyId;
+  }
+
+  const endpoint = strategyId ? `${API}/api/registry/backtest` : `${API}/api/backtest`;
+
+  showLoading();
+
+  try {
+    const loadingMsgs = [
+      ['Fetching price data...', `${payload.symbol} hourly bars from Alpaca`],
+      ['Computing indicators...', 'SMA, EMA, RSI, MACD...'],
+      ['Running bar-by-bar simulation...', 'Evaluating entry and exit signals'],
+      ['Calculating metrics...', 'Sharpe, Sortino, drawdown...'],
+    ];
+    let msgIdx = 0;
+    const msgTimer = setInterval(() => {
+      if (msgIdx < loadingMsgs.length) {
+        document.getElementById('loadingText').textContent = loadingMsgs[msgIdx][0];
+        document.getElementById('loadingSub').textContent  = loadingMsgs[msgIdx][1];
+        msgIdx++;
+      }
+    }, 1200);
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+
+    clearInterval(msgTimer);
+    const data = await res.json();
+
+    if (!res.ok) {
+      showError(data.detail?.validation
+        ? 'Strategy validation failed: ' + data.detail.validation.errors.map(e => e.message).join(', ')
+        : JSON.stringify(data));
+      return;
+    }
+
+    if (!data.success) {
+      showError(data.error || 'Backtest failed');
+      return;
+    }
+
+    renderResults(data);
+
+  } catch (err) {
+    showError('Could not connect to backend at localhost:8000. Make sure uvicorn is running.');
+  }
+}
+
+// ─── Show states ──────────────────────────────────────────────────────────────
+function showLoading() {
+  document.getElementById('emptyState').style.display    = 'none';
+  document.getElementById('resultsState').style.display  = 'none';
+  document.getElementById('errorState').style.display    = 'none';
+  document.getElementById('loadingState').style.display  = 'flex';
+  document.getElementById('loadingText').textContent     = 'Fetching price data...';
+  document.getElementById('loadingSub').textContent      = 'Connecting to Alpaca...';
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').style.display  = 'none';
+  document.getElementById('resultsState').style.display  = 'none';
+  document.getElementById('emptyState').style.display    = 'none';
+  const el = document.getElementById('errorState');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="error-banner"><span style="font-size:18px;">✕</span><div><div style="font-weight:600;margin-bottom:4px;">Backtest failed</div><div>${msg}</div></div></div>`;
+}
+
+// ─── Render results ───────────────────────────────────────────────────────────
+function renderResults(d) {
+  document.getElementById('loadingState').style.display  = 'none';
+  document.getElementById('emptyState').style.display    = 'none';
+  document.getElementById('errorState').style.display    = 'none';
+  document.getElementById('resultsState').style.display  = 'block';
+
+  const m = d.metrics;
+  const isPos = d.final_capital >= d.initial_capital;
+
+  // Header
+  document.getElementById('resultsTitle').textContent =
+    `${d.strategy_name} — ${d.symbol}`;
+  document.getElementById('resultsMeta').textContent =
+    `${d.start_date} → ${d.end_date}  ·  ${d.total_bars.toLocaleString()} bars  ·  ${d.timeframe}  ·  ${d.data_source}`;
+
+  // Badges
+  const badges = document.getElementById('resultsBadges');
+  badges.innerHTML = `
+    <span class="badge ${isPos ? 'badge-green' : 'badge-red'}">${isPos ? '▲' : '▼'} ${m.total_return_pct.toFixed(2)}%</span>
+    <span class="badge badge-blue">${m.total_trades} trades</span>
+    <span class="badge ${d.position_sizing === 'fixed' ? 'badge-amber' : 'badge-blue'}">${d.position_sizing}</span>
+  `;
+
+  // Metric cards
+  const pf = m.profit_factor;
+  const pfColor = pf === null ? 'neu' : pf >= 1.5 ? 'pos' : pf >= 1.0 ? 'neu' : 'neg';
+  const cards = [
+    {label:'Total Return',    value: fmt(m.total_return_pct,'%',2), color: m.total_return_pct >= 0 ? 'pos' : 'neg', sub: `$${d.initial_capital.toLocaleString()} → $${d.final_capital.toLocaleString()}`},
+    {label:'CAGR',            value: fmt(m.cagr_pct,'%',2),         color: m.cagr_pct >= 0 ? 'pos' : 'neg',         sub: 'Annualised'},
+    {label:'Sharpe Ratio',    value: m.sharpe_ratio.toFixed(2),     color: m.sharpe_ratio >= 1 ? 'pos' : m.sharpe_ratio >= 0 ? 'neu' : 'neg', sub: '>1.0 is good'},
+    {label:'Sortino Ratio',   value: m.sortino_ratio.toFixed(2),    color: m.sortino_ratio >= 1 ? 'pos' : 'neu',    sub: 'Downside-adjusted'},
+    {label:'Max Drawdown',    value: fmt(m.max_drawdown_pct,'%',2), color: 'neg',                                   sub: 'Peak to trough'},
+    {label:'Win Rate',        value: fmt(m.win_rate_pct,'%',1),     color: m.win_rate_pct >= 50 ? 'pos' : 'neu',   sub: `${Math.round(m.total_trades * m.win_rate_pct/100)} of ${m.total_trades} trades`},
+    {label:'Profit Factor',   value: pf === null ? '∞' : pf.toFixed(2), color: pfColor,                            sub: 'Gross profit / loss'},
+    {label:'Avg Hold',        value: m.avg_holding_hours.toFixed(1)+'h', color:'neu',                              sub: `~${(m.avg_holding_hours/6.5).toFixed(1)} trading days`},
+  ];
+
+  document.getElementById('metricsGrid').innerHTML = cards.map(c => `
+    <div class="metric-card">
+      <div class="metric-label">${c.label.toUpperCase()}</div>
+      <div class="metric-value ${c.color}">${c.value}</div>
+      <div class="metric-sub">${c.sub}</div>
+    </div>
+  `).join('');
+
+  // Equity chart
+  renderEquityChart(d.equity_curve, d.initial_capital);
+
+  // Drawdown chart
+  renderDrawdownChart(d.drawdown_curve);
+
+  // Exit breakdown
+  renderExitBreakdown(d.exit_reason_breakdown, m.total_trades);
+
+  // Trade table
+  renderTradeTable(d.trade_log);
+
+  // Show approve panel if this came from registry (has run_id)
+  if (d.run_id) {
+    showApprovePanel(d.run_id);
+  } else {
+    const approveDiv = document.getElementById('approveSection');
+    if (approveDiv) approveDiv.innerHTML = '';
+  }
+}
+
+function fmt(val, unit, decimals) {
+  const s = Math.abs(val).toFixed(decimals);
+  return (val >= 0 ? '+' : '-') + s + unit;
+}
+
+// ─── Charts ───────────────────────────────────────────────────────────────────
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {legend:{display:false}, tooltip:{
+    backgroundColor:'#1a1e28',
+    borderColor:'#2a2f3d',
+    borderWidth:1,
+    titleColor:'#8b92a8',
+    bodyColor:'#e8ecf5',
+    titleFont:{family:'JetBrains Mono',size:10},
+    bodyFont:{family:'JetBrains Mono',size:11},
+  }},
+  scales: {
+    x:{
+      ticks:{color:'#5a6078',font:{family:'JetBrains Mono',size:9},maxTicksLimit:8},
+      grid:{color:'rgba(42,47,61,.5)'},
+      border:{color:'#2a2f3d'},
+    },
+    y:{
+      ticks:{color:'#5a6078',font:{family:'JetBrains Mono',size:9}},
+      grid:{color:'rgba(42,47,61,.5)'},
+      border:{color:'#2a2f3d'},
+    }
+  }
+};
+
+function renderEquityChart(curve, initial) {
+  if (equityChartInst) equityChartInst.destroy();
+  const labels = curve.map(p => p.timestamp.slice(0,10));
+  const values = curve.map(p => p.equity);
+  const isPos  = values[values.length-1] >= initial;
+  const color  = isPos ? '#3ecf8e' : '#f06060';
+
+  equityChartInst = new Chart(document.getElementById('equityChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: color,
+        borderWidth: 1.5,
+        fill: true,
+        backgroundColor: isPos ? 'rgba(62,207,142,.06)' : 'rgba(240,96,96,.06)',
+        pointRadius: 0,
+        tension: 0.3,
+      }]
+    },
+    options: {
+      ...chartDefaults,
+      plugins: {...chartDefaults.plugins, tooltip:{
+        ...chartDefaults.plugins.tooltip,
+        callbacks:{
+          label: ctx => `$${ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`
+        }
+      }}
+    }
+  });
+}
+
+function renderDrawdownChart(curve) {
+  if (drawdownChartInst) drawdownChartInst.destroy();
+  if (!curve || !curve.length) return;
+  const labels = curve.map(p => p.timestamp.slice(0,10));
+  const values = curve.map(p => p.drawdown_pct);
+
+  drawdownChartInst = new Chart(document.getElementById('drawdownChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: '#f06060',
+        borderWidth: 1.5,
+        fill: true,
+        backgroundColor: 'rgba(240,96,96,.08)',
+        pointRadius: 0,
+        tension: 0.2,
+      }]
+    },
+    options: {
+      ...chartDefaults,
+      plugins:{...chartDefaults.plugins, tooltip:{
+        ...chartDefaults.plugins.tooltip,
+        callbacks:{label: ctx => `${ctx.parsed.y.toFixed(2)}%`}
+      }}
+    }
+  });
+}
+
+function renderExitBreakdown(breakdown, total) {
+  const el = document.getElementById('exitBreakdown');
+  if (!breakdown || !Object.keys(breakdown).length) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px;">No trades</div>';
+    return;
+  }
+
+  const colors = {signal:'#4f8ef7', stop_loss:'#f06060', take_profit:'#3ecf8e'};
+  const labels = {signal:'Signal exit', stop_loss:'Stop loss', take_profit:'Take profit'};
+
+  el.innerHTML = Object.entries(breakdown).map(([k,v]) => {
+    const pct = total ? (v/total*100).toFixed(0) : 0;
+    const col = colors[k] || '#8b92a8';
+    return `
+      <div class="breakdown-row">
+        <div class="breakdown-label">${labels[k]||k}</div>
+        <div class="breakdown-bar-wrap">
+          <div class="breakdown-bar" style="width:${pct}%;background:${col};"></div>
+        </div>
+        <div class="breakdown-count">${v}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderTradeTable(trades) {
+  const tbody = document.getElementById('tradeTableBody');
+  if (!trades || !trades.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:24px;">No trades executed</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = trades.map((t, i) => {
+    const pnlPos = t.pnl >= 0;
+    const reasonClass = t.exit_reason === 'signal' ? 'reason-signal' : t.exit_reason === 'stop_loss' ? 'reason-stop' : 'reason-tp';
+    const reasonLabel = t.exit_reason === 'stop_loss' ? 'Stop loss' : t.exit_reason === 'take_profit' ? 'Take profit' : 'Signal';
+    return `<tr>
+      <td style="color:var(--text3);">${i+1}</td>
+      <td>${fmtTime(t.entry_time)}</td>
+      <td>${fmtTime(t.exit_time)}</td>
+      <td>$${t.entry_price.toFixed(2)}</td>
+      <td>$${t.exit_price.toFixed(2)}</td>
+      <td>${t.shares.toFixed(2)}</td>
+      <td class="${pnlPos ? 'td-pos' : 'td-neg'}">${pnlPos ? '+' : ''}$${t.pnl.toFixed(2)}</td>
+      <td class="${pnlPos ? 'td-pos' : 'td-neg'}">${pnlPos ? '+' : ''}${t.pnl_pct.toFixed(2)}%</td>
+      <td>${t.bars_held}</td>
+      <td><span class="reason-pill ${reasonClass}">${reasonLabel}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function fmtTime(ts) {
+  return ts ? ts.slice(0,16).replace('T',' ') : '—';
+}
+
+// ─── Approve backtest ─────────────────────────────────────────────────────────
+async function approveBacktest(runId) {
+  const notes = document.getElementById('approveNotes')?.value || '';
+  const btn = document.querySelector('#approveSection button');
+  if (btn) { btn.textContent = 'Approving...'; btn.disabled = true; }
+
+  try {
+    const res = await fetch(`${API}/api/registry/backtest/${runId}/approve`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({notes}),
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('approveSection').innerHTML = `
+        <div style="margin-top:16px;padding:14px 16px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:8px;color:var(--green);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">✓</span>
+          Strategy approved — version ${data.new_version} saved to registry. Ready for paper trading.
+        </div>`;
+      localStorage.removeItem('pending_strategy_id');
+    } else {
+      if (btn) { btn.textContent = '✗ Failed'; btn.disabled = false; }
+    }
+  } catch(e) {
+    if (btn) { btn.textContent = '✗ Connection error'; btn.disabled = false; }
+  }
+}
+
+// ─── Show approve panel after results ─────────────────────────────────────────
+function showApprovePanel(runId) {
+  const approveDiv = document.getElementById('approveSection');
+  if (!runId || !approveDiv) return;
+  approveDiv.innerHTML = `
+    <div style="margin-top:16px;padding:16px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">Approve this backtest?</div>
+        <div style="font-size:11px;color:var(--text3);">Approving marks this strategy as ready for paper trading in the Neon registry.</div>
+      </div>
+      <input id="approveNotes" placeholder="Add approval notes..." style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 10px;width:220px;outline:none;flex-shrink:0;">
+      <button onclick="approveBacktest(${runId})" style="display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--green);color:white;border:none;white-space:nowrap;flex-shrink:0;">
+        ✓ Approve Strategy
+      </button>
+    </div>`;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+setSymbol('SPY');
+
+// Auto-load strategy passed from Strategy Builder via localStorage
+const pending   = localStorage.getItem('pending_strategy');
+const pendingId = localStorage.getItem('pending_strategy_id');
+if (pending) {
+  document.getElementById('strategyJson').value = pending;
+  validateJson();
+  localStorage.removeItem('pending_strategy');
+  const status = document.getElementById('jsonStatus');
+  status.className = 'json-status ok';
+  status.textContent = pendingId
+    ? '✓ Strategy loaded from Registry — run backtest to save result'
+    : '✓ Strategy loaded from Strategy Builder — ready to run';
+}
+</script>
+</body>
+</html>

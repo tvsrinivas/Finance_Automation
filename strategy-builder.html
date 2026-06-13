@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #13161d;
+    --surface2:  #1a1e28;
+    --surface3:  #222736;
+    --border:    #2a2f3d;
+    --border2:   #333849;
+    --accent:    #4f8ef7;
+    --accent2:   #6ba3ff;
+    --green:     #3ecf8e;
+    --amber:     #f5a623;
+    --red:       #f06060;
+    --text:      #e8ecf5;
+    --text2:     #8b92a8;
+    --text3:     #5a6078;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-brand { display: flex; align-items: center; gap: 10px; }
+  .header-logo {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+  }
+  .header-title { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+  .header-sub { font-size: 11px; color: var(--text3); margin-left: 8px; }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px; color: var(--text2);
+    font-family: var(--mono);
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+  .status-dot.valid { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.error { background: var(--red); }
+  .status-dot.warning { background: var(--amber); }
+
+  /* ── Layout ── */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1px;
+    background: var(--border);
+    min-height: calc(100vh - 52px - 64px);
+  }
+  .panel {
+    background: var(--bg);
+    padding: 20px 24px;
+  }
+  .panel-full {
+    grid-column: 1 / -1;
+    background: var(--bg);
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .panel-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text3);
+  }
+  .panel-label.entry { color: var(--green); }
+  .panel-label.exit  { color: var(--accent); }
+  .panel-label.risk  { color: var(--amber); }
+
+  /* ── Strategy Name ── */
+  .name-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .name-label { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .name-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 6px 12px;
+    width: 280px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .name-input:focus { border-color: var(--accent); }
+
+  /* ── Condition Row ── */
+  .condition-list { display: flex; flex-direction: column; gap: 0; }
+  .logic-connector {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 0;
+    position: relative;
+  }
+  .logic-connector::before {
+    content: ''; position: absolute; left: 14px; top: 0; bottom: 0;
+    width: 1px; background: var(--border2);
+  }
+  .logic-btn {
+    position: relative; z-index: 1;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: var(--mono);
+  }
+  .logic-btn:hover, .logic-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(79,142,247,.08);
+  }
+
+  .condition-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto;
+    gap: 8px;
+    align-items: start;
+    position: relative;
+    transition: border-color .15s;
+  }
+  .condition-row:hover { border-color: var(--border2); }
+  .condition-row.has-error { border-color: var(--red); background: rgba(240,96,96,.04); }
+  .condition-row.has-warning { border-color: var(--amber); background: rgba(245,166,35,.04); }
+  .condition-row.is-valid { border-color: rgba(62,207,142,.3); }
+
+  .condition-remove {
+    position: absolute; top: 8px; right: 8px;
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: all .15s;
+    opacity: 0;
+  }
+  .condition-row:hover .condition-remove { opacity: 1; }
+  .condition-remove:hover { background: rgba(240,96,96,.15); color: var(--red); }
+
+  .indicator-side { display: flex; flex-direction: column; gap: 6px; }
+  .indicator-type-row { display: flex; gap: 6px; align-items: center; }
+
+  .sel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 5px 8px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color .15s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+  .sel:focus { border-color: var(--accent); }
+  .sel.ind-sel { font-weight: 500; color: var(--accent2); background-color: rgba(79,142,247,.07); }
+
+  .param-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .param-group { display: flex; align-items: center; gap: 3px; }
+  .param-label { font-size: 10px; color: var(--text3); }
+  .num-input {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 6px;
+    width: 54px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .num-input:focus { border-color: var(--accent); }
+  .source-pills { display: flex; gap: 2px; }
+  .source-pill {
+    font-size: 10px; font-weight: 600; font-family: var(--mono);
+    padding: 2px 6px; border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface3);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all .1s;
+  }
+  .source-pill.active {
+    background: rgba(79,142,247,.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .operator-col {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: flex-start;
+    padding-top: 4px;
+    gap: 4px;
+  }
+  .op-sel { width: 110px; text-align: center; font-weight: 500; }
+
+  .rhs-toggle {
+    display: flex; gap: 2px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px;
+  }
+  .rhs-tab {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px;
+    border: none; background: transparent; color: var(--text3);
+    cursor: pointer; transition: all .15s;
+  }
+  .rhs-tab.active { background: var(--surface2); color: var(--text); }
+
+  .range-hint { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+
+  .add-condition-btn {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 10px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px dashed var(--border2);
+    background: transparent;
+    color: var(--text3);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    width: 100%;
+    justify-content: center;
+  }
+  .add-condition-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,.05); }
+
+  /* ── Risk Panel ── */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .risk-field { display: flex; flex-direction: column; gap: 6px; }
+  .risk-label { font-size: 10px; color: var(--text3); font-weight: 500; letter-spacing: 0.03em; }
+  .risk-input-row { display: flex; align-items: center; gap: 6px; }
+  .risk-num {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 500;
+    padding: 7px 10px;
+    width: 80px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .risk-num:focus { border-color: var(--accent); }
+  .risk-unit { font-size: 11px; color: var(--text3); }
+  .risk-type-toggle { display: flex; gap: 3px; }
+  .type-btn {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text3);
+    cursor: pointer; transition: all .15s;
+  }
+  .type-btn.active { border-color: var(--amber); color: var(--amber); background: rgba(245,166,35,.08); }
+
+  /* ── Action Bar ── */
+  .action-bar {
+    position: sticky; bottom: 0; z-index: 100;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    gap: 12px;
+  }
+  .action-left { display: flex; align-items: center; gap: 12px; }
+  .action-right { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 7px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all .15s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border2);
+    color: var(--text2);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,.06); }
+  .btn-secondary {
+    background: var(--surface2);
+    border-color: var(--border2);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled {
+    background: var(--surface3);
+    color: var(--text3);
+    cursor: not-allowed;
+  }
+  .btn-validate {
+    background: rgba(79,142,247,.12);
+    border-color: rgba(79,142,247,.3);
+    color: var(--accent);
+  }
+  .btn-validate:hover { background: rgba(79,142,247,.2); }
+
+  /* ── Validation Banner ── */
+  .validation-banner {
+    grid-column: 1/-1;
+    padding: 10px 24px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .banner-error   { background: rgba(240,96,96,.08);   color: var(--red); }
+  .banner-warning { background: rgba(245,166,35,.08);  color: var(--amber); }
+  .banner-success { background: rgba(62,207,142,.08);  color: var(--green); }
+  .banner-icon { font-size: 14px; }
+
+  .inline-error { font-size: 11px; color: var(--red);   margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+  .inline-warn  { font-size: 11px; color: var(--amber); margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+
+  /* ── JSON Preview ── */
+  .json-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .json-overlay.open { display: flex; }
+  .json-modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    width: 660px; max-height: 80vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .json-modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .json-modal-title { font-size: 12px; font-weight: 600; }
+  .json-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; line-height: 1; }
+  .json-close:hover { color: var(--text); }
+  pre.json-code {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.6;
+    padding: 16px 18px;
+    overflow: auto;
+    flex: 1;
+    color: var(--text2);
+  }
+  .json-key   { color: var(--accent2); }
+  .json-str   { color: var(--green); }
+  .json-num   { color: var(--amber); }
+  .json-bool  { color: #c792ea; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">S</div>
+    <span class="header-title">Strategy Builder</span>
+    <span class="header-sub">v1.0</span>
+    <nav style="display:flex;gap:2px;margin-left:24px;">
+      <a style="padding:6px 14px;border-radius:6px;border:1px solid rgba(79,142,247,.25);font-size:12px;font-weight:500;color:var(--accent);background:rgba(79,142,247,.1);text-decoration:none;" href="#">Designer</a>
+      <a style="padding:6px 14px;border-radius:6px;border:1px solid transparent;font-size:12px;font-weight:500;color:var(--text2);background:transparent;text-decoration:none;" href="backtest-lab.html">Backtest Lab</a>
+    </nav>
+  </div>
+  <div id="statusPill" class="status-pill">
+    <span id="statusDot" class="status-dot"></span>
+    <span id="statusText">Not validated</span>
+  </div>
+</div>
+
+<div class="name-bar">
+  <span class="name-label">Strategy Name</span>
+  <input id="strategyName" class="name-input" type="text" value="Momentum_1" placeholder="Enter strategy name..." oninput="saveStateToStorage()" />
+  <button onclick="clearState()" style="font-size:11px;color:var(--text3);background:transparent;border:1px solid var(--border);border-radius:5px;padding:4px 10px;cursor:pointer;margin-left:4px;transition:all .15s;" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)';" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)';">
+    ↺ Reset
+  </button>
+</div>
+
+<div id="validationBanner" style="display:none;" class="validation-banner">
+  <span class="banner-icon" id="bannerIcon"></span>
+  <span id="bannerText"></span>
+</div>
+
+<div class="workspace">
+  <!-- Entry Rules -->
+  <div class="panel" id="entryPanel">
+    <div class="panel-header">
+      <span class="panel-label entry">↑ Entry Rules</span>
+      <span style="font-size:11px;color:var(--text3)">Open position when conditions are met</span>
+    </div>
+    <div class="condition-list" id="entryConditions"></div>
+    <button class="add-condition-btn" onclick="addCondition('entry')">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Add condition
+    </button>
+  </div>
+
+  <!-- Exit Rules -->
+  <div class="panel" id="exitPanel">
+    <div class="panel-header">
+      <span class="panel-label exit">↓ Exit Rules</span>
+      <span style="font-size:11px;color:var(--text3)">Close position when conditions are met</span>
+    </div>
+    <div class="condition-list" id="exitConditions"></div>
+    <button class="add-condition-btn" onclick="addCondition('exit')">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Add condition
+    </button>
+  </div>
+
+  <!-- Risk Rules -->
+  <div class="panel-full">
+    <div class="panel-header">
+      <span class="panel-label risk">⚡ Risk Rules</span>
+    </div>
+    <div class="risk-grid">
+      <div class="risk-field">
+        <div class="risk-label">Stop Loss</div>
+        <div class="risk-input-row">
+          <input id="stopLoss" class="risk-num" type="number" value="5" min="0.1" max="50" step="0.5">
+          <span class="risk-unit">%</span>
+        </div>
+        <div class="risk-type-toggle">
+          <button class="type-btn active" onclick="setRiskType('sl','percent',this)">% of entry</button>
+          <button class="type-btn" onclick="setRiskType('sl','atr',this)" style="opacity:.4" title="Coming soon">ATR mult</button>
+        </div>
+      </div>
+      <div class="risk-field">
+        <div class="risk-label">Take Profit</div>
+        <div class="risk-input-row">
+          <input id="takeProfit" class="risk-num" type="number" value="15" min="0.1" max="200" step="0.5">
+          <span class="risk-unit">%</span>
+        </div>
+        <div class="risk-type-toggle">
+          <button class="type-btn active" onclick="setRiskType('tp','percent',this)">% of entry</button>
+          <button class="type-btn" onclick="setRiskType('tp','atr',this)" style="opacity:.4" title="Coming soon">ATR mult</button>
+        </div>
+      </div>
+      <div class="risk-field">
+        <div class="risk-label">Position Size</div>
+        <div class="risk-input-row">
+          <input id="posSize" class="risk-num" type="number" value="10" min="1" max="100" step="1">
+          <span class="risk-unit">% capital</span>
+        </div>
+      </div>
+      <div class="risk-field">
+        <div class="risk-label">Max Open Positions</div>
+        <div class="risk-input-row">
+          <input id="maxPos" class="risk-num" type="number" value="5" min="1" max="50" step="1">
+          <span class="risk-unit">positions</span>
+        </div>
+      </div>
+    </div>
+    <div id="riskErrors"></div>
+  </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar">
+  <div class="action-left">
+    <button class="btn btn-ghost" onclick="showJSON()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 4.5h5M4 6.5h5M4 8.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Preview DSL
+    </button>
+  </div>
+  <div class="action-right">
+    <button class="btn btn-validate" onclick="runValidation()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 7l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Validate Strategy
+    </button>
+    <button id="saveBtn" class="btn btn-secondary" disabled onclick="saveToRegistry()">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 2h7l2 2v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2"/><path d="M4 12V7h5v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Save to Registry
+    </button>
+    <button id="backtestBtn" class="btn btn-primary" disabled onclick="saveStrategy()">
+      Run Backtest →
+    </button>
+  </div>
+</div>
+
+<!-- JSON Preview Modal -->
+<div id="jsonOverlay" class="json-overlay" onclick="if(event.target===this)closeJSON()">
+  <div class="json-modal">
+    <div class="json-modal-header">
+      <span class="json-modal-title">Strategy DSL — JSON Preview</span>
+      <button class="json-close" onclick="closeJSON()">×</button>
+    </div>
+    <pre class="json-code" id="jsonCode"></pre>
+  </div>
+</div>
+
+<!-- Save to Registry Modal -->
+<div id="saveOverlay" class="json-overlay" onclick="if(event.target===this)closeSaveModal()">
+  <div class="json-modal" style="width:480px;">
+    <div class="json-modal-header">
+      <span class="json-modal-title">Save Strategy to Registry</span>
+      <button class="json-close" onclick="closeSaveModal()">×</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">
+        This will save your strategy as a new <span style="color:var(--amber);font-weight:600;">draft</span> in the Neon registry.
+        You can run a backtest and approve it afterwards.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:11px;color:var(--text3);font-weight:500;">Strategy Name</label>
+        <div id="saveModalName" style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:11px;color:var(--text3);font-weight:500;">Notes <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
+        <textarea id="saveModalNotes" placeholder="e.g. SPY trend pullback strategy using SMA200 + RSI filter..." style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:12px;padding:10px;width:100%;min-height:80px;resize:vertical;outline:none;line-height:1.5;transition:border-color .15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+        <button onclick="closeSaveModal()" style="padding:8px 16px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--text2);">Cancel</button>
+        <button id="confirmSaveBtn" onclick="confirmSaveToRegistry()" style="padding:8px 20px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--accent);color:white;border:none;">
+          Save to Registry
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Indicator Spec ───────────────────────────────────────────────────────────
+const INDICATORS = {
+  SMA:        { label:'SMA',         group:'Trend',          outputType:'line',
+                params:{ period:{type:'int',default:20,min:2,max:500}, source:{type:'enum',options:['open','high','low','close'],default:'close'} },
+                validOps:['>','<','>=','<=','==','cross_above','cross_below'], validRhs:['line','scalar','level'] },
+  EMA:        { label:'EMA',         group:'Trend',          outputType:'line',
+                params:{ period:{type:'int',default:20,min:2,max:500}, source:{type:'enum',options:['open','high','low','close'],default:'close'} },
+                validOps:['>','<','>=','<=','==','cross_above','cross_below'], validRhs:['line','scalar','level'] },
+  RSI:        { label:'RSI',         group:'Momentum',       outputType:'line',
+                params:{ period:{type:'int',default:14,min:2,max:100}, source:{type:'enum',options:['open','high','low','close'],default:'close'} },
+                validOps:['>','<','>=','<=','==','cross_above','cross_below'], validRhs:['scalar'],
+                rhsConstraints:{min:0,max:100} },
+  MACD:       { label:'MACD',        group:'Momentum',       outputType:'composite',
+                params:{ fast:{type:'int',default:12,min:2,max:100}, slow:{type:'int',default:26,min:2,max:200}, signal:{type:'int',default:9,min:2,max:50} },
+                components:{ macd_line:{label:'MACD Line',outputType:'crossable_line'}, signal_line:{label:'Signal Line',outputType:'crossable_line'}, histogram:{label:'Histogram',outputType:'histogram'} },
+                defaultComponent:'macd_line',
+                validOps:{ macd_line:['>','<','cross_above','cross_below'], signal_line:['>','<','cross_above','cross_below'], histogram:['>','<','>=','<='] } },
+  ATR:        { label:'ATR',         group:'Volatility',     outputType:'line',
+                params:{ period:{type:'int',default:14,min:2,max:100} },
+                validOps:['>','<','>=','<='], validRhs:['scalar','line'] },
+  PRICE:      { label:'Price',       group:'Price & Volume', outputType:'scalar',
+                params:{ source:{type:'enum',options:['open','high','low','close'],default:'close'} },
+                validOps:['>','<','>=','<=','==','cross_above','cross_below'], validRhs:['scalar','line','level'] },
+  VOLUME:     { label:'Volume',      group:'Price & Volume', outputType:'scalar',
+                params:{},
+                validOps:['>','<','>=','<='], validRhs:['scalar'] },
+  WEEK52_HIGH:{ label:'52W High',    group:'Price & Volume', outputType:'level', params:{}, validOps:['>','<','>=','<='], validRhs:['scalar','line'] },
+  WEEK52_LOW: { label:'52W Low',     group:'Price & Volume', outputType:'level', params:{}, validOps:['>','<','>=','<='], validRhs:['scalar','line'] },
+};
+
+const OPERATORS = {
+  '>':           'is above',
+  '<':           'is below',
+  '>=':          '≥',
+  '<=':          '≤',
+  '==':          'equals',
+  'cross_above': 'crosses above',
+  'cross_below': 'crosses below',
+};
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let state = {
+  entry: [
+    { id: 'e1', left:{type:'SMA',params:{period:20,source:'close'}}, operator:'cross_above', rhs:{type:'indicator', data:{type:'SMA',params:{period:50,source:'close'}}}, logic:'AND' },
+    { id: 'e2', left:{type:'RSI',params:{period:14,source:'close'}}, operator:'<', rhs:{type:'scalar',value:40}, logic:'AND' },
+  ],
+  exit: [
+    { id: 'x1', left:{type:'MACD',params:{fast:12,slow:26,signal:9},component:'macd_line'}, operator:'cross_below', rhs:{type:'indicator',data:{type:'MACD',params:{fast:12,slow:26,signal:9},component:'signal_line'}}, logic:'OR' },
+  ],
+  conditionErrors: {},
+  validated: false,
+  valid: false,
+};
+
+let riskTypes = { sl: 'percent', tp: 'percent' };
+
+function setRiskType(key, type, btn) {
+  if (type === 'atr') return; // coming soon
+  riskTypes[key] = type;
+  btn.closest('.risk-type-toggle').querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  renderSection('entry', document.getElementById('entryConditions'));
+  renderSection('exit',  document.getElementById('exitConditions'));
+}
+
+function renderSection(section, container) {
+  container.innerHTML = '';
+  const items = state[section];
+  items.forEach((cond, idx) => {
+    if (idx > 0) {
+      const conn = document.createElement('div');
+      conn.className = 'logic-connector';
+      const btn = document.createElement('button');
+      btn.className = 'logic-btn active';
+      btn.textContent = cond.logic;
+      btn.onclick = () => { cond.logic = cond.logic === 'AND' ? 'OR' : 'AND'; render(); };
+      conn.appendChild(btn);
+      container.appendChild(conn);
+    }
+    container.appendChild(buildConditionRow(section, cond, idx));
+  });
+}
+
+function buildConditionRow(section, cond, idx) {
+  const errors = state.conditionErrors[cond.id] || [];
+  const hasError   = errors.some(e => e.severity === 'error');
+  const hasWarning = errors.some(e => e.severity === 'warning');
+  const isValid    = state.validated && !hasError && !hasWarning;
+
+  const row = document.createElement('div');
+  row.className = 'condition-row' + (hasError ? ' has-error' : hasWarning ? ' has-warning' : isValid ? ' is-valid' : '');
+
+  // Remove button
+  const rm = document.createElement('button');
+  rm.className = 'condition-remove';
+  rm.innerHTML = '×';
+  rm.title = 'Remove condition';
+  rm.onclick = () => { state[section].splice(idx, 1); state.validated = false; updateStatus(); render(); };
+  row.appendChild(rm);
+
+  // Left side
+  const leftDiv = document.createElement('div');
+  leftDiv.className = 'indicator-side';
+  leftDiv.appendChild(buildIndicatorSide(section, cond, 'left'));
+  row.appendChild(leftDiv);
+
+  // Operator
+  const opDiv = document.createElement('div');
+  opDiv.className = 'operator-col';
+  const spec = INDICATORS[cond.left.type];
+  let validOps = spec.validOps;
+  if (spec.outputType === 'composite' && cond.left.component) {
+    validOps = spec.validOps[cond.left.component] || [];
+  }
+  const opSel = document.createElement('select');
+  opSel.className = 'sel op-sel';
+  validOps.forEach(op => {
+    const o = document.createElement('option');
+    o.value = op; o.textContent = OPERATORS[op] || op;
+    if (op === cond.operator) o.selected = true;
+    opSel.appendChild(o);
+  });
+  opSel.onchange = () => { cond.operator = opSel.value; state.validated = false; updateStatus(); render(); };
+  opDiv.appendChild(opSel);
+
+  // RHS toggle
+  const toggle = document.createElement('div');
+  toggle.className = 'rhs-toggle';
+  const valTab = document.createElement('button');
+  valTab.className = 'rhs-tab' + (cond.rhs.type === 'scalar' ? ' active' : '');
+  valTab.textContent = 'Value';
+  valTab.onclick = () => { cond.rhs = {type:'scalar', value: 0}; state.validated = false; updateStatus(); render(); };
+  const indTab = document.createElement('button');
+  indTab.className = 'rhs-tab' + (cond.rhs.type === 'indicator' ? ' active' : '');
+  indTab.textContent = 'Indicator';
+  indTab.onclick = () => { cond.rhs = {type:'indicator', data:{type:'SMA',params:{period:50,source:'close'}}}; state.validated = false; updateStatus(); render(); };
+  toggle.appendChild(valTab);
+  toggle.appendChild(indTab);
+  opDiv.appendChild(toggle);
+  row.appendChild(opDiv);
+
+  // Right side
+  const rightDiv = document.createElement('div');
+  rightDiv.className = 'indicator-side';
+  if (cond.rhs.type === 'scalar') {
+    rightDiv.appendChild(buildScalarRhs(cond, spec));
+  } else {
+    rightDiv.appendChild(buildIndicatorSide(section, cond, 'right'));
+  }
+  row.appendChild(rightDiv);
+
+  // Inline errors
+  if (errors.length) {
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText = 'grid-column:1/-1;';
+    errors.forEach(e => {
+      const msg = document.createElement('div');
+      msg.className = e.severity === 'error' ? 'inline-error' : 'inline-warn';
+      msg.innerHTML = (e.severity === 'error' ? '⚠ ' : '◈ ') + e.message;
+      errDiv.appendChild(msg);
+    });
+    row.appendChild(errDiv);
+  }
+
+  return row;
+}
+
+function buildScalarRhs(cond, spec) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
+  const inp = document.createElement('input');
+  inp.type = 'number';
+  inp.className = 'num-input';
+  inp.style.width = '80px';
+  inp.value = cond.rhs.value ?? 0;
+  if (spec.rhsConstraints) { inp.min = spec.rhsConstraints.min; inp.max = spec.rhsConstraints.max; }
+  inp.onchange = () => { cond.rhs.value = parseFloat(inp.value); state.validated = false; updateStatus(); };
+  wrap.appendChild(inp);
+  if (spec.rhsConstraints) {
+    const hint = document.createElement('div');
+    hint.className = 'range-hint';
+    hint.textContent = `${spec.rhsConstraints.min} – ${spec.rhsConstraints.max}`;
+    wrap.appendChild(hint);
+  }
+  return wrap;
+}
+
+function buildIndicatorSide(section, cond, side) {
+  const idata = side === 'left' ? cond.left : (cond.rhs.data || {type:'SMA',params:{period:50,source:'close'}});
+  const wrap = document.createElement('div');
+  wrap.className = 'indicator-side';
+
+  // Indicator type row
+  const typeRow = document.createElement('div');
+  typeRow.className = 'indicator-type-row';
+
+  // Type selector
+  const typeSel = document.createElement('select');
+  typeSel.className = 'sel ind-sel';
+  const groups = {};
+  Object.entries(INDICATORS).forEach(([k, v]) => {
+    if (!groups[v.group]) groups[v.group] = [];
+    groups[v.group].push([k, v]);
+  });
+  Object.entries(groups).forEach(([g, items]) => {
+    const optGroup = document.createElement('optgroup');
+    optGroup.label = g;
+    items.forEach(([k, v]) => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = v.label;
+      if (k === idata.type) o.selected = true;
+      optGroup.appendChild(o);
+    });
+    typeSel.appendChild(optGroup);
+  });
+  typeSel.onchange = () => {
+    const newType = typeSel.value;
+    const newSpec = INDICATORS[newType];
+    const newParams = {};
+    Object.entries(newSpec.params).forEach(([k,v]) => { newParams[k] = v.default; });
+    if (side === 'left') {
+      cond.left = {type: newType, params: newParams};
+      if (newSpec.outputType === 'composite') cond.left.component = newSpec.defaultComponent;
+      // Reset operator to first valid
+      const ops = newSpec.outputType === 'composite' ? newSpec.validOps[cond.left.component] : newSpec.validOps;
+      cond.operator = ops[0];
+    } else {
+      cond.rhs.data = {type: newType, params: newParams};
+      if (newSpec.outputType === 'composite') cond.rhs.data.component = newSpec.defaultComponent;
+    }
+    state.validated = false; updateStatus(); render();
+  };
+  typeRow.appendChild(typeSel);
+
+  // Component selector for MACD
+  const spec = INDICATORS[idata.type];
+  if (spec.outputType === 'composite') {
+    const compSel = document.createElement('select');
+    compSel.className = 'sel';
+    Object.entries(spec.components).forEach(([k, v]) => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = v.label;
+      if (k === idata.component) o.selected = true;
+      compSel.appendChild(o);
+    });
+    compSel.onchange = () => {
+      if (side === 'left') {
+        cond.left.component = compSel.value;
+        const ops = spec.validOps[compSel.value] || [];
+        if (!ops.includes(cond.operator)) cond.operator = ops[0];
+      } else {
+        cond.rhs.data.component = compSel.value;
+      }
+      state.validated = false; updateStatus(); render();
+    };
+    typeRow.appendChild(compSel);
+  }
+
+  wrap.appendChild(typeRow);
+
+  // Params
+  if (Object.keys(spec.params).length > 0) {
+    const paramRow = document.createElement('div');
+    paramRow.className = 'param-row';
+
+    Object.entries(spec.params).forEach(([pname, pspec]) => {
+      if (pspec.type === 'int') {
+        const pg = document.createElement('div');
+        pg.className = 'param-group';
+        const lbl = document.createElement('span');
+        lbl.className = 'param-label';
+        lbl.textContent = pname === 'period' ? 'period' : pname === 'fast' ? 'fast' : pname === 'slow' ? 'slow' : pname === 'signal' ? 'sig' : pname;
+        const inp = document.createElement('input');
+        inp.type = 'number';
+        inp.className = 'num-input';
+        inp.value = idata.params?.[pname] ?? pspec.default ?? '';
+        inp.min = pspec.min; inp.max = pspec.max;
+        inp.onchange = () => {
+          const target = side === 'left' ? cond.left : cond.rhs.data;
+          if (!target.params) target.params = {};
+          target.params[pname] = parseInt(inp.value);
+          state.validated = false; updateStatus();
+        };
+        pg.appendChild(lbl);
+        pg.appendChild(inp);
+        paramRow.appendChild(pg);
+      } else if (pspec.type === 'enum' && pname === 'source') {
+        const pills = document.createElement('div');
+        pills.className = 'source-pills';
+        pspec.options.forEach(opt => {
+          const p = document.createElement('button');
+          p.className = 'source-pill' + (idata.params?.[pname] === opt ? ' active' : '');
+          p.textContent = opt[0].toUpperCase();
+          p.title = opt;
+          p.onclick = () => {
+            const target = side === 'left' ? cond.left : cond.rhs.data;
+            if (!target.params) target.params = {};
+            target.params[pname] = opt;
+            state.validated = false; updateStatus(); render();
+          };
+          pills.appendChild(p);
+        });
+        paramRow.appendChild(pills);
+      }
+    });
+
+    wrap.appendChild(paramRow);
+  }
+
+  return wrap;
+}
+
+// ─── Add Condition ────────────────────────────────────────────────────────────
+function addCondition(section) {
+  const id = section[0] + Date.now();
+  state[section].push({
+    id,
+    left: {type:'RSI', params:{period:14,source:'close'}},
+    operator: '<',
+    rhs: {type:'scalar', value:40},
+    logic: 'AND',
+  });
+  state.validated = false;
+  updateStatus();
+  render();
+}
+
+// ─── Build Strategy JSON ──────────────────────────────────────────────────────
+function buildStrategyJSON() {
+  const indicators = {};
+  const conditions = {};
+
+  function processIndicator(idata, prefix) {
+    if (!idata || !idata.type) return null;
+    const key = (prefix + '_' + idata.type + (idata.params?.period || '') + (idata.component || '')).toLowerCase().replace(/[^a-z0-9]/g,'_');
+    if (!indicators[key]) {
+      indicators[key] = {type: idata.type, params: {...(idata.params || {})}};
+      if (idata.component) indicators[key].component = idata.component;
+    }
+    return key;
+  }
+
+  [...state.entry, ...state.exit].forEach(cond => {
+    const leftKey = processIndicator(cond.left, 'left');
+    let rightVal;
+    if (cond.rhs.type === 'scalar') {
+      rightVal = {type:'scalar', value: cond.rhs.value};
+    } else {
+      const rKey = processIndicator(cond.rhs.data, 'right');
+      rightVal = {type:'indicator', ref: rKey};
+    }
+    conditions[cond.id] = {
+      left: leftKey,
+      operator: cond.operator,
+      right: rightVal,
+    };
+  });
+
+  const groupLogic = (items) => ({
+    logic: items[1]?.logic || 'AND',
+    conditions: items.map(c => c.id),
+  });
+
+  return {
+    schema_version: '1.0',
+    strategy_name: document.getElementById('strategyName').value || 'Unnamed',
+    indicators,
+    conditions,
+    entry_rules: groupLogic(state.entry),
+    exit_rules: groupLogic(state.exit),
+    risk_rules: {
+      stop_loss:     {type: riskTypes.sl, value: parseFloat(document.getElementById('stopLoss').value)},
+      take_profit:   {type: riskTypes.tp, value: parseFloat(document.getElementById('takeProfit').value)},
+      position_size: {type: 'percent_of_capital', value: parseFloat(document.getElementById('posSize').value)},
+      max_open_positions: parseInt(document.getElementById('maxPos').value),
+    },
+  };
+}
+
+// ─── Validation ───────────────────────────────────────────────────────────────
+async function runValidation() {
+  const payload = buildStrategyJSON();
+  const response = await fetch('http://localhost:8000/api/validate', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify(payload)
+});
+const result = await response.json();
+  applyValidationResult(result);
+}
+
+function validateLocally(payload) {
+  const errors = [], warnings = [];
+  const {indicators, conditions, entry_rules, exit_rules, risk_rules} = payload;
+
+  if (!payload.strategy_name?.trim())
+    errors.push({layer:1,severity:'error',condition_ids:[],field:'strategy_name',message:'Strategy name is required',ui_target:'strategy_name'});
+
+  const allCids = [...(entry_rules?.conditions||[]), ...(exit_rules?.conditions||[])];
+
+  allCids.forEach(cid => {
+    if (!conditions[cid])
+      errors.push({layer:1,severity:'error',condition_ids:[cid],message:`Condition '${cid}' referenced but not defined`,ui_target:cid});
+  });
+
+  // Layer 2: Indicator validity
+  Object.entries(indicators||{}).forEach(([iid, ind]) => {
+    const spec = INDICATORS[ind.type];
+    if (!spec) { errors.push({layer:2,severity:'error',condition_ids:[],message:`'${ind.type}' is not a supported indicator`,ui_target:iid}); return; }
+    Object.entries(spec.params||{}).forEach(([pname,pspec]) => {
+      if (pspec.optional) return;
+      const val = ind.params?.[pname];
+      if (val === undefined || val === null) return;
+      if (pspec.type === 'int') {
+        if (val < pspec.min || val > pspec.max)
+          errors.push({layer:2,severity:'error',condition_ids:[],message:`${ind.type} '${pname}' must be between ${pspec.min} and ${pspec.max}`,ui_target:iid});
+      }
+    });
+    if (ind.type === 'MACD' && ind.params) {
+      if (ind.params.fast >= ind.params.slow)
+        errors.push({layer:2,severity:'error',condition_ids:[],message:'MACD fast period must be less than slow period',ui_target:iid});
+    }
+  });
+
+  // Layer 3: Condition type safety
+  Object.entries(conditions||{}).forEach(([cid, cond]) => {
+    const indRef = indicators[cond.left];
+    if (!indRef) return;
+    const spec = INDICATORS[indRef.type];
+    if (!spec) return;
+    let validOps = spec.validOps;
+    if (spec.outputType === 'composite' && indRef.component)
+      validOps = spec.validOps[indRef.component] || [];
+    if (validOps && !validOps.includes(cond.operator))
+      errors.push({layer:3,severity:'error',condition_ids:[cid],message:`'${cond.operator}' is not valid for ${indRef.type}`,ui_target:cid});
+    if (cond.right?.type === 'scalar' && spec.rhsConstraints) {
+      const v = cond.right.value;
+      if (v < spec.rhsConstraints.min || v > spec.rhsConstraints.max)
+        errors.push({layer:3,severity:'error',condition_ids:[cid],message:`${indRef.type} value must be between ${spec.rhsConstraints.min} and ${spec.rhsConstraints.max} — got ${v}`,ui_target:cid});
+    }
+  });
+
+  // Layer 4: Completeness
+  if (!(entry_rules?.conditions?.length))
+    errors.push({layer:4,severity:'error',condition_ids:[],message:'Add at least one entry condition',ui_target:'entry_rules'});
+  if (!(exit_rules?.conditions?.length))
+    errors.push({layer:4,severity:'error',condition_ids:[],message:'Add at least one exit condition',ui_target:'exit_rules'});
+
+  // Layer 5: Risk
+  const rr = risk_rules || {};
+  if (!rr.stop_loss)
+    warnings.push({layer:5,severity:'warning',condition_ids:[],message:'No stop loss defined — positions have unlimited downside risk',ui_target:'risk_panel'});
+  if (rr.stop_loss && rr.take_profit) {
+    if (rr.take_profit.value <= rr.stop_loss.value)
+      errors.push({layer:5,severity:'error',condition_ids:[],message:`Take profit (${rr.take_profit.value}%) must be greater than stop loss (${rr.stop_loss.value}%)`,ui_target:'risk_panel'});
+  }
+  if (rr.position_size && (rr.position_size.value <= 0 || rr.position_size.value > 100))
+    errors.push({layer:5,severity:'error',condition_ids:[],message:'Position size must be between 1% and 100%',ui_target:'risk_panel'});
+
+  // Layer 6: Semantic — RSI entry/exit contradiction
+  const entryCids = entry_rules?.conditions || [];
+  const exitCids  = exit_rules?.conditions  || [];
+  entryCids.forEach(ecid => {
+    exitCids.forEach(xcid => {
+      const ec = conditions[ecid], xc = conditions[xcid];
+      if (!ec || !xc) return;
+      const ei = indicators[ec.left], xi = indicators[xc.left];
+      if (!ei || !xi || ei.type !== 'RSI' || xi.type !== 'RSI') return;
+      const eOp = ec.operator, xOp = xc.operator;
+      const eVal = ec.right?.value ?? 50, xVal = xc.right?.value ?? 50;
+      if (['<','<='].includes(eOp) && ['<','<='].includes(xOp) && xVal <= eVal)
+        errors.push({layer:6,severity:'error',condition_ids:[ecid,xcid],message:`Entry needs RSI ${eOp} ${eVal} but exit fires at RSI ${xOp} ${xVal} — exit may trigger immediately after entry`,ui_target:ecid});
+    });
+  });
+
+  return {valid: errors.length === 0, can_proceed_to_backtest: errors.length === 0, errors, warnings};
+}
+
+function applyValidationResult(result) {
+  state.validated = true;
+  state.valid = result.valid;
+  state.conditionErrors = {};
+
+  const allIssues = [...result.errors, ...result.warnings];
+  allIssues.forEach(issue => {
+    (issue.condition_ids || []).forEach(cid => {
+      if (!state.conditionErrors[cid]) state.conditionErrors[cid] = [];
+      state.conditionErrors[cid].push(issue);
+    });
+  });
+
+  // Risk panel errors
+  const riskDiv = document.getElementById('riskErrors');
+  riskDiv.innerHTML = '';
+  allIssues.filter(i => i.ui_target === 'risk_panel').forEach(issue => {
+    const d = document.createElement('div');
+    d.className = issue.severity === 'error' ? 'inline-error' : 'inline-warn';
+    d.style.marginTop = '10px';
+    d.innerHTML = (issue.severity === 'error' ? '⚠ ' : '◈ ') + issue.message;
+    riskDiv.appendChild(d);
+  });
+
+  // Banner
+  const banner = document.getElementById('validationBanner');
+  const bannerIcon = document.getElementById('bannerIcon');
+  const bannerText = document.getElementById('bannerText');
+  banner.style.display = '';
+
+  if (result.errors.length) {
+    banner.className = 'validation-banner banner-error';
+    bannerIcon.textContent = '✕';
+    bannerText.textContent = `${result.errors.length} error${result.errors.length>1?'s':''} found — fix before running backtest` +
+      (result.warnings.length ? ` · ${result.warnings.length} warning${result.warnings.length>1?'s':''}` : '');
+  } else if (result.warnings.length) {
+    banner.className = 'validation-banner banner-warning';
+    bannerIcon.textContent = '◈';
+    bannerText.textContent = `Strategy valid with ${result.warnings.length} warning${result.warnings.length>1?'s':''} — review before proceeding`;
+  } else {
+    banner.className = 'validation-banner banner-success';
+    bannerIcon.textContent = '✓';
+    bannerText.textContent = 'Strategy valid — ready to run backtest';
+  }
+
+  document.getElementById('backtestBtn').disabled = !result.can_proceed_to_backtest;
+  document.getElementById('saveBtn').disabled = !result.can_proceed_to_backtest;
+  updateStatus();
+  render();
+}
+
+function updateStatus() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (!state.validated) {
+    dot.className = 'status-dot';
+    txt.textContent = 'Not validated';
+  } else if (!state.valid) {
+    dot.className = 'status-dot error';
+    txt.textContent = 'Validation failed';
+  } else {
+    dot.className = 'status-dot valid';
+    txt.textContent = 'Valid · Ready';
+  }
+  saveStateToStorage();
+}
+
+function saveStateToStorage() {
+  try {
+    const snapshot = {
+      strategyName: document.getElementById('strategyName')?.value || 'Momentum_1',
+      entry:        state.entry,
+      exit:         state.exit,
+      stopLoss:     document.getElementById('stopLoss')?.value,
+      takeProfit:   document.getElementById('takeProfit')?.value,
+      posSize:      document.getElementById('posSize')?.value,
+      maxPos:       document.getElementById('maxPos')?.value,
+    };
+    localStorage.setItem('strategy_builder_state', JSON.stringify(snapshot));
+  } catch(e) {}
+}
+
+function clearState() {
+  if (!confirm('Reset strategy to defaults?')) return;
+  localStorage.removeItem('strategy_builder_state');
+  localStorage.removeItem('pending_strategy_id');
+  state.entry = [
+    { id: 'e1', left:{type:'SMA',params:{period:20,source:'close'}}, operator:'cross_above', rhs:{type:'indicator', data:{type:'SMA',params:{period:50,source:'close'}}}, logic:'AND' },
+    { id: 'e2', left:{type:'RSI',params:{period:14,source:'close'}}, operator:'<', rhs:{type:'scalar',value:40}, logic:'AND' },
+  ];
+  state.exit = [
+    { id: 'x1', left:{type:'MACD',params:{fast:12,slow:26,signal:9},component:'macd_line'}, operator:'cross_below', rhs:{type:'indicator',data:{type:'MACD',params:{fast:12,slow:26,signal:9},component:'signal_line'}}, logic:'OR' },
+  ];
+  document.getElementById('strategyName').value = 'Momentum_1';
+  document.getElementById('stopLoss').value   = '5';
+  document.getElementById('takeProfit').value = '15';
+  document.getElementById('posSize').value    = '10';
+  document.getElementById('maxPos').value     = '5';
+  state.validated = false;
+  updateStatus();
+  render();
+}
+
+// ─── JSON Preview ─────────────────────────────────────────────────────────────
+function syntaxHighlight(json) {
+  json = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    let cls = 'json-num';
+    if (/^"/.test(match)) cls = /:$/.test(match) ? 'json-key' : 'json-str';
+    else if (/true|false/.test(match)) cls = 'json-bool';
+    else if (/null/.test(match)) cls = 'json-bool';
+    return `<span class="${cls}">${match}</span>`;
+  });
+}
+
+function showJSON() {
+  const json = JSON.stringify(buildStrategyJSON(), null, 2);
+  document.getElementById('jsonCode').innerHTML = syntaxHighlight(json);
+  document.getElementById('jsonOverlay').classList.add('open');
+}
+
+function closeJSON() {
+  document.getElementById('jsonOverlay').classList.remove('open');
+}
+
+// ─── Save to Registry Modal ───────────────────────────────────────────────────
+function saveToRegistry() {
+  // Open modal — show strategy name, ask for notes
+  const payload = buildStrategyJSON();
+  document.getElementById('saveModalName').textContent = payload.strategy_name || 'Unnamed';
+  document.getElementById('saveModalNotes').value = '';
+  document.getElementById('saveOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('saveModalNotes').focus(), 100);
+}
+
+function closeSaveModal() {
+  document.getElementById('saveOverlay').classList.remove('open');
+}
+
+async function confirmSaveToRegistry() {
+  const payload  = buildStrategyJSON();
+  const notes    = document.getElementById('saveModalNotes').value.trim();
+  const btn      = document.getElementById('confirmSaveBtn');
+  const saveBtn  = document.getElementById('saveBtn');
+
+  btn.textContent = 'Saving...';
+  btn.disabled    = true;
+
+  try {
+    const res = await fetch('http://localhost:8000/api/registry/strategies', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({strategy: payload, notes, created_by: 'user'})
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const strategyId = data.strategy.strategy_id;
+      localStorage.setItem('pending_strategy',    JSON.stringify(payload, null, 2));
+      localStorage.setItem('pending_strategy_id', strategyId);
+
+      // Close modal
+      closeSaveModal();
+
+      // Update save button
+      saveBtn.textContent = '✓ Saved';
+      saveBtn.style.background   = 'var(--green)';
+      saveBtn.style.color        = 'white';
+      saveBtn.style.borderColor  = 'var(--green)';
+      setTimeout(() => {
+        saveBtn.textContent      = 'Save to Registry';
+        saveBtn.style.background = '';
+        saveBtn.style.color      = '';
+        saveBtn.style.borderColor = '';
+        saveBtn.disabled         = false;
+      }, 2500);
+    } else {
+      btn.textContent = '✗ Failed — retry';
+      btn.disabled    = false;
+    }
+  } catch(e) {
+    btn.textContent = '✗ No connection';
+    btn.disabled    = false;
+  }
+}
+
+// ─── Launch Backtest Lab ──────────────────────────────────────────────────────
+function saveStrategy() {
+  const payload = buildStrategyJSON();
+  const el = document.getElementById('backtestBtn');
+  el.textContent = 'Opening Backtest Lab...';
+  el.style.background = 'var(--green)';
+  localStorage.setItem('pending_strategy', JSON.stringify(payload, null, 2));
+  setTimeout(() => { window.location.href = 'backtest-lab.html'; }, 600);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+function restoreStateFromStorage() {
+  try {
+    const saved = localStorage.getItem('strategy_builder_state');
+    if (!saved) return;
+    const snapshot = JSON.parse(saved);
+
+    if (snapshot.strategyName)
+      document.getElementById('strategyName').value = snapshot.strategyName;
+
+    if (snapshot.entry && snapshot.entry.length) state.entry = snapshot.entry;
+    if (snapshot.exit  && snapshot.exit.length)  state.exit  = snapshot.exit;
+
+    if (snapshot.stopLoss)   document.getElementById('stopLoss').value   = snapshot.stopLoss;
+    if (snapshot.takeProfit) document.getElementById('takeProfit').value = snapshot.takeProfit;
+    if (snapshot.posSize)    document.getElementById('posSize').value    = snapshot.posSize;
+    if (snapshot.maxPos)     document.getElementById('maxPos').value     = snapshot.maxPos;
+  } catch(e) {}
+}
+
+restoreStateFromStorage();
+render();
+</script>
+</body>
+</html>

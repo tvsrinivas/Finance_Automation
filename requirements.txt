@@ -1,0 +1,13 @@
+fastapi>=0.110.0
+uvicorn>=0.27.0
+pydantic>=2.0.0
+requests
+python-dotenv
+alpaca-py>=0.20.0
+pandas>=2.0.0
+numpy>=1.24.0
+yfinance>=0.2.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+apscheduler>=3.10.0
+tzdata>=2024.1
