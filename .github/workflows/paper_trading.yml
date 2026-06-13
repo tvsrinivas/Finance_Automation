@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Paper Trading Workflow
+#
+# Runs every hour during US market hours (Mon-Fri).
+# Reads approved deployments from Neon, evaluates signals on live Alpaca data,
+# places paper orders, writes positions back to Neon.
+#
+# GitHub UTC cron covers 13:00-21:00 UTC = 9 AM - 5 PM ET
+# The engine's is_market_open() handles exact ET market hours filtering.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Paper Trading Cycle
+
+on:
+  # ── Scheduled trigger ──────────────────────────────────────────────────────
+  schedule:
+    # Runs at minute 0, every hour from 13:00-21:00 UTC, Mon-Fri
+    # 13:00 UTC = 9 AM EDT (summer) / 8 AM EST (winter) — engine filters exact hours
+    - cron: '0 13-21 * * 1-5'
+
+  # ── Manual trigger ─────────────────────────────────────────────────────────
+  # Lets you run the cycle from GitHub UI without waiting for schedule
+  # Go to: GitHub repo → Actions → Paper Trading Cycle → Run workflow
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
+        default: 'Manual test'
+
+# ─── Job definition ───────────────────────────────────────────────────────────
+jobs:
+  paper-trade:
+    name: Run Paper Trading Cycle
+    runs-on: ubuntu-latest        # GitHub provides this machine for free
+
+    # Only run one instance at a time — prevents overlapping cycles
+    concurrency:
+      group: paper-trading
+      cancel-in-progress: false   # don't cancel running cycle if new one triggers
+
+    steps:
+
+      # ── Step 1: Get your code ───────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # This copies all your files (paper_trading/, db/, backtest/, etc.)
+        # onto the GitHub Ubuntu machine
+
+      # ── Step 2: Install Python ──────────────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'            # caches pip packages between runs = faster
+
+      # ── Step 3: Install dependencies ────────────────────────────────────────
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        # Installs: alpaca-py, sqlalchemy, psycopg2-binary, pandas,
+        #           numpy, apscheduler, python-dotenv, etc.
+
+      # ── Step 4: Run the paper trading cycle ─────────────────────────────────
+      - name: Run paper trading cycle
+        env:
+          # Secrets injected from GitHub repo settings
+          # Never hardcode real values here — always use ${{ secrets.NAME }}
+          ALPACA_API_KEY:     ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY:  ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL:    https://paper-api.alpaca.markets
+          ALPACA_DATA_URL:    https://data.alpaca.markets
+          NEON_DATABASE_URL:  ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          python -c "
+          import logging
+          logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+          from paper_trading.engine import run_paper_trading_cycle
+          run_paper_trading_cycle()
+          print('Cycle complete')
+          "
+        # Output is visible in GitHub Actions logs
+        # Go to: repo → Actions → click any run → click job → see full output
+
+      # ── Step 5: Report outcome ──────────────────────────────────────────────
+      - name: Confirm completion
+        if: always()              # runs even if previous step failed
+        run: |
+          echo "Cycle finished at $(date -u)"
+          echo "Check Neon paper_positions table for trade records"
