@@ -1,2 +1,6 @@
 .env
+github_key.txt
+alpaca_authenti_reset_key*
 venv/
+__pycache__/
+*.logalpaca_authenti_reset_key 
