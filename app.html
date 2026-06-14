@@ -1423,7 +1423,7 @@ async function loadRegistry() {
         <div class="metric-val ${bt?.total_return_pct>=0?'td-pos':'td-neg'}">${bt?.total_return_pct!=null?(bt.total_return_pct>=0?'+':'')+parseFloat(bt.total_return_pct).toFixed(2)+'%':'—'}</div>
         <div style="font-size:11px;color:var(--text3);">${s.created_at?.slice(0,10)||'—'}</div>
         <div class="reg-actions">
-          <button class="reg-btn" onclick="loadStrategyFromRegistry('${s.strategy_id}','${JSON.stringify(s.strategy_json).replace(/'/g,"\\'")}')">Load</button>
+          <button class="reg-btn" onclick="loadFromRegistry('${s.strategy_id}')">Load</button>
           <button class="reg-btn" onclick="viewHistory('${s.strategy_id}')">History</button>
         </div>
       </div>`;
@@ -1431,13 +1431,52 @@ async function loadRegistry() {
   } catch(e){document.getElementById('registryRows').innerHTML='<div style="padding:24px;text-align:center;color:var(--red);font-size:12px;">Failed to load registry</div>';}
 }
 
-function loadStrategyFromRegistry(stratId, jsonStr) {
+async function loadFromRegistry(stratId) {
   try {
-    const strategy = JSON.parse(jsonStr);
-    AppState.registryId = stratId;
-    if (strategy.strategy_name) { AppState.strategyName=strategy.strategy_name; document.getElementById('strategyName').value=strategy.strategy_name; }
+    const res  = await fetch(`${API()}/api/registry/strategies/${stratId}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Not found');
+
+    AppState.registryId   = stratId;
+    AppState.strategyName = data.strategy_name;
+    document.getElementById('strategyName').value = data.strategy_name;
+
+    // Load conditions from strategy_json if present
+    const sj = data.strategy_json || {};
+    const conds = sj.conditions || {};
+    const inds  = sj.indicators || {};
+    const entryIds = sj.entry_rules?.conditions || [];
+    const exitIds  = sj.exit_rules?.conditions  || [];
+
+    function buildCond(id, logic) {
+      const c = conds[id]; if (!c) return null;
+      const lInd = inds[c.left] || {};
+      const left = {type: lInd.type||'RSI', params: lInd.params||{}, component: lInd.component};
+      const rhs  = c.right?.type==='scalar'
+        ? {type:'scalar', value: c.right.value}
+        : {type:'indicator', data:{type:(inds[c.right?.ref]||{}).type||'SMA', params:(inds[c.right?.ref]||{}).params||{}, component:(inds[c.right?.ref]||{}).component}};
+      return {id: id+'_'+Date.now(), left, operator: c.operator, rhs, logic};
+    }
+
+    if (entryIds.length) AppState.entry = entryIds.map((id,i)=>buildCond(id,i===0?'AND':(sj.entry_rules?.logic||'AND'))).filter(Boolean);
+    if (exitIds.length)  AppState.exit  = exitIds.map((id,i)=>buildCond(id,i===0?'OR':(sj.exit_rules?.logic||'OR'))).filter(Boolean);
+
+    // Risk rules
+    const rr = sj.risk_rules || {};
+    if (rr.stop_loss?.value)    document.getElementById('stopLoss').value   = rr.stop_loss.value;
+    if (rr.take_profit?.value)  document.getElementById('takeProfit').value = rr.take_profit.value;
+    if (rr.position_size?.value)document.getElementById('posSize').value    = rr.position_size.value;
+
+    AppState.validated = false;
+    updateStatus();
+    render();
+    saveState();
     navigate('designer');
   } catch(e) { alert('Could not load strategy: '+e.message); }
+}
+
+function loadStrategyFromRegistry(stratId) {
+  loadFromRegistry(stratId);
 }
 
 async function viewHistory(stratId) {

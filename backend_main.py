@@ -412,7 +412,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from backtest.engine import run_backtest
 from backtest.data import validate_symbol as _validate_symbol
-from agents.strategy_creation_agent import run_strategy_creation_agent
 
 class BacktestRequest(BaseModel):
     strategy: dict
@@ -941,6 +940,7 @@ def _call_llm_provider(provider: str, model: str, prompt: str) -> str:
 
 # ─── Strategy Creation Agent Routes ───────────────────────────────────────────
 
+from agents.strategy_creation_agent import run_strategy_creation_agent
 
 class StrategyCreationRequest(BaseModel):
     goal: str
@@ -983,3 +983,137 @@ def agent_create_strategy(req: StrategyCreationRequest):
         )
 
     return result
+
+
+# ─── Market Intelligence Agent Routes ────────────────────────────────────────
+
+from agents.market_intelligence_agent import run_market_intelligence_agent
+from agents.hypothesis_generator      import run_hypothesis_generator
+from agents.morning_pipeline          import run_morning_pipeline
+
+
+class MorningPipelineRequest(BaseModel):
+    provider: str = "anthropic"
+    model:    str = "claude-sonnet-4-6"
+    symbol:   str = "SPY"
+    dry_run:  bool = False
+
+
+@app.get("/api/agent/market-brief")
+def get_market_brief():
+    """
+    Run Market Intelligence Agent — returns current regime classification.
+    Layer 1: Price-based regime from Alpaca
+    Layer 2: Economic calendar check
+    """
+    result = run_market_intelligence_agent()
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    return result
+
+
+@app.post("/api/agent/hypotheses")
+def generate_hypotheses(req: MorningPipelineRequest):
+    """
+    Run Hypothesis Generator on current market conditions.
+    Returns 2-3 strategy hypotheses ready for the Creation Agent.
+    """
+    mi_result = run_market_intelligence_agent()
+    if not mi_result["success"]:
+        raise HTTPException(status_code=500, detail=mi_result.get("error"))
+
+    hyp_result = run_hypothesis_generator(
+        brief=mi_result["brief"],
+        provider=req.provider,
+        model=req.model,
+    )
+    return {
+        "brief":      mi_result["brief"],
+        "hypotheses": hyp_result,
+    }
+
+
+@app.post("/api/agent/morning-pipeline")
+def morning_pipeline(req: MorningPipelineRequest):
+    """
+    Run full morning pipeline:
+    Market Intelligence → Hypotheses → Strategy Creation → Backtest → Registry
+    """
+    result = run_morning_pipeline(
+        provider=req.provider,
+        model=req.model,
+        symbol=req.symbol,
+        dry_run=req.dry_run,
+    )
+    return result
+
+
+# ─── Symbol Universe Routes ───────────────────────────────────────────────────
+
+@app.get("/api/universe/symbols")
+def list_symbols(
+    strategy_type: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """List symbols in universe, optionally filtered by strategy type."""
+    from sqlalchemy import text
+    if strategy_type:
+        rows = db.execute(text("""
+            SELECT su.symbol, su.company_name, su.sector,
+                   su.trend_score, su.avg_atr_pct_30d, su.momentum_score,
+                   su.avg_volume_30d, su.last_classified,
+                   ssm.confidence, ssm.assigned_by
+            FROM symbol_universe su
+            JOIN symbol_strategy_mapping ssm ON ssm.symbol = su.symbol
+            WHERE ssm.strategy_type = :st AND ssm.is_active = TRUE AND su.is_active = TRUE
+            ORDER BY ssm.confidence DESC
+        """), {"st": strategy_type}).fetchall()
+    else:
+        rows = db.execute(text("""
+            SELECT symbol, company_name, sector,
+                   trend_score, avg_atr_pct_30d, momentum_score,
+                   avg_volume_30d, last_classified, NULL, NULL
+            FROM symbol_universe WHERE is_active = TRUE
+            ORDER BY market_cap_rank ASC NULLS LAST
+        """)).fetchall()
+
+    return {"symbols": [
+        {
+            "symbol":       r[0], "company_name": r[1], "sector": r[2],
+            "trend_score":  float(r[3]) if r[3] else None,
+            "atr_pct":      float(r[4]) if r[4] else None,
+            "momentum":     float(r[5]) if r[5] else None,
+            "volume":       float(r[6]) if r[6] else None,
+            "last_classified": str(r[7]) if r[7] else None,
+            "confidence":   float(r[8]) if r[8] else None,
+            "assigned_by":  r[9],
+        }
+        for r in rows
+    ]}
+
+
+@app.post("/api/universe/classify")
+def classify_symbols(max_symbols: int = 30):
+    """
+    Run the Symbol Classifier Agent.
+    Computes trading characteristics for all symbols and updates strategy mappings.
+    """
+    from agents.symbol_classifier import run_symbol_classifier
+    result = run_symbol_classifier(max_symbols=max_symbols)
+    return result
+
+
+@app.post("/api/universe/symbols")
+def add_symbol(symbol: str, company_name: str = "", sector: str = "", db: Session = Depends(get_db)):
+    """Add a new symbol to the universe."""
+    from sqlalchemy import text
+    db.execute(text("""
+        INSERT INTO symbol_universe (symbol, company_name, sector)
+        VALUES (:symbol, :company_name, :sector)
+        ON CONFLICT (symbol) DO UPDATE SET
+            company_name = EXCLUDED.company_name,
+            sector       = EXCLUDED.sector,
+            is_active    = TRUE
+    """), {"symbol": symbol.upper(), "company_name": company_name, "sector": sector})
+    db.commit()
+    return {"success": True, "symbol": symbol.upper()}

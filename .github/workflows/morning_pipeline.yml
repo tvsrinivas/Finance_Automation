@@ -1,0 +1,51 @@
+name: Morning Pipeline
+
+on:
+  schedule:
+    - cron: '0 11 * * 1-5'
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no save)'
+        required: false
+        default: 'false'
+      force_generate:
+        description: 'Force new strategy generation (ignore reuse check)'
+        required: false
+        default: 'false'
+      symbol:
+        description: 'Fallback symbol'
+        required: false
+        default: 'SPY'
+
+jobs:
+  morning-pipeline:
+    name: Run Morning Pipeline
+    runs-on: ubuntu-latest
+    concurrency:
+      group: morning-pipeline
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - name: Run morning pipeline
+        env:
+          ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL:   https://paper-api.alpaca.markets
+          ALPACA_DATA_URL:   https://data.alpaca.markets
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BACKEND_URL:       ${{ secrets.BACKEND_URL || 'http://localhost:8000' }}
+        run: |
+          FLAGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then FLAGS="$FLAGS --dry-run"; fi
+          if [ "${{ github.event.inputs.force_generate }}" = "true" ]; then FLAGS="$FLAGS --force-generate"; fi
+          python agents/morning_pipeline.py --symbol ${{ github.event.inputs.symbol || 'SPY' }} $FLAGS
+      - if: always()
+        run: echo "Pipeline finished at $(date -u)"

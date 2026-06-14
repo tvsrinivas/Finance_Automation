@@ -96,6 +96,7 @@ def fetch_recent_bars(symbol: str, timeframe: str = "1Hour", lookback_bars: int 
         start=start,
         end=end,
         adjustment="all",
+        feed="iex",
     )
 
     bars = client.get_stock_bars(request)

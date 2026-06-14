@@ -1,0 +1,188 @@
+2026-06-14 14:44:12,231  INFO  db.connection  Neon database connection OK
+2026-06-14 14:47:07,673  INFO  agents.market_intelligence_agent  Market Intelligence Agent starting...
+2026-06-14 14:47:07,673  INFO  agents.market_intelligence_agent  Fetching market data from Alpaca...
+2026-06-14 14:47:13,652  ERROR  agents.market_intelligence_agent  Market Intelligence Agent failed: {"message":"subscription does not permit querying recent SIP data"}
+
+2026-06-14 14:48:49,683  INFO  db.connection  Neon database connection OK
+2026-06-14 14:49:28,908  INFO  db.connection  Neon database connection OK
+2026-06-14 14:51:05,420  INFO  db.connection  Neon database connection OK
+2026-06-14 14:51:46,790  INFO  agents.market_intelligence_agent  Market Intelligence Agent starting...
+2026-06-14 14:51:46,794  INFO  agents.market_intelligence_agent  Fetching market data from Alpaca...
+2026-06-14 14:51:50,210  INFO  agents.market_intelligence_agent  Fetched market data for 10 symbols
+2026-06-14 14:51:50,218  INFO  agents.market_intelligence_agent  Classifying market regime...
+2026-06-14 14:51:50,226  INFO  agents.market_intelligence_agent  Checking economic calendar...
+2026-06-14 14:51:50,226  INFO  agents.market_intelligence_agent  Market brief complete — regime=bull_volatile confidence=0.65 vix=high events=1
+2026-06-14 14:54:27,253  INFO  agents.market_intelligence_agent  Market Intelligence Agent starting...
+2026-06-14 14:54:27,253  INFO  agents.market_intelligence_agent  Fetching market data from Alpaca...
+2026-06-14 14:54:29,357  INFO  agents.market_intelligence_agent  Fetched market data for 10 symbols
+2026-06-14 14:54:29,370  INFO  agents.market_intelligence_agent  Classifying market regime...
+2026-06-14 14:54:29,370  INFO  agents.market_intelligence_agent  Checking economic calendar...
+2026-06-14 14:54:29,374  INFO  agents.market_intelligence_agent  Market brief complete — regime=bull_volatile confidence=0.65 vix=high events=1
+2026-06-14 14:54:29,374  INFO  agents.hypothesis_generator  Generating 2 hypotheses for bull_volatile regime...
+2026-06-14 14:55:03,601  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 14:55:03,718  INFO  agents.hypothesis_generator  Generated 2 hypotheses
+2026-06-14 14:59:49,460  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 14:59:49,460  INFO  agents.morning_pipeline  Morning Pipeline started — 2026-06-14 18:59 UTC
+2026-06-14 14:59:49,469  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 14:59:49,469  INFO  agents.morning_pipeline  Step 1: Running Market Intelligence Agent...
+2026-06-14 14:59:49,469  INFO  agents.market_intelligence_agent  Market Intelligence Agent starting...
+2026-06-14 14:59:49,469  INFO  agents.market_intelligence_agent  Fetching market data from Alpaca...
+2026-06-14 14:59:51,605  INFO  agents.market_intelligence_agent  Fetched market data for 10 symbols
+2026-06-14 14:59:51,613  INFO  agents.market_intelligence_agent  Classifying market regime...
+2026-06-14 14:59:51,613  INFO  agents.market_intelligence_agent  Checking economic calendar...
+2026-06-14 14:59:51,621  INFO  agents.market_intelligence_agent  Market brief complete — regime=bull_volatile confidence=0.65 vix=high events=1
+2026-06-14 14:59:51,621  INFO  agents.morning_pipeline  Regime: bull_volatile (confidence: 65%)
+2026-06-14 14:59:51,621  INFO  agents.morning_pipeline  VIX level: high | Breadth: mixed
+2026-06-14 14:59:51,621  INFO  agents.morning_pipeline  Event: FOMC Rate Decision in 3 days
+2026-06-14 14:59:51,630  INFO  agents.morning_pipeline  Step 2: Generating strategy hypotheses...
+2026-06-14 14:59:51,630  INFO  agents.hypothesis_generator  Generating 2 hypotheses for bull_volatile regime...
+2026-06-14 15:00:23,677  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:00:23,677  INFO  agents.hypothesis_generator  Generated 2 hypotheses
+2026-06-14 15:00:23,677  INFO  agents.morning_pipeline  Generated 2 hypotheses
+2026-06-14 15:00:23,686  INFO  agents.morning_pipeline  
+Processing hypothesis 1/2: pullback_entry
+2026-06-14 15:00:23,686  INFO  agents.morning_pipeline  Goal: Pullback Entry on SPY using EMA and RSI confluence: Wait for SPY to pull back to...
+2026-06-14 15:00:23,686  INFO  agents.morning_pipeline    Creating strategy DSL...
+2026-06-14 15:00:23,686  INFO  agents.strategy_creation_agent  Strategy Creation Agent started — source=hypothesis_agent goal='Pullback Entry on SPY using EMA and RSI confluence: Wait for...'
+2026-06-14 15:00:23,686  INFO  agents.strategy_creation_agent  Step 1: Parsing intent...
+2026-06-14 15:00:39,957  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:00:39,965  INFO  agents.strategy_creation_agent  Step 1 complete: EMA-RSI Pullback Entry on SPY — 3 entry concepts
+2026-06-14 15:00:39,965  INFO  agents.strategy_creation_agent  Step 2: Mapping indicators...
+2026-06-14 15:01:11,243  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:01:11,243  INFO  agents.strategy_creation_agent  Step 2 complete: 8 indicators, 3 entry conditions
+2026-06-14 15:01:11,249  INFO  agents.strategy_creation_agent  Step 3: DSL built — 8 indicators, 6 conditions
+2026-06-14 15:01:11,249  INFO  agents.strategy_creation_agent  Step 4: Validation attempt 1...
+2026-06-14 15:01:11,249  INFO  agents.strategy_creation_agent  Step 4: Valid on attempt 1
+2026-06-14 15:01:11,249  INFO  agents.strategy_creation_agent  Step 6: Generating explanation...
+2026-06-14 15:01:51,541  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:01:51,549  INFO  agents.strategy_creation_agent  Step 6: Explanation complete
+2026-06-14 15:01:51,549  INFO  agents.strategy_creation_agent  Agent complete — 5 steps, valid=True, gaps=12
+2026-06-14 15:01:51,549  INFO  agents.morning_pipeline    Strategy created: EMA-RSI Pullback Entry on SPY
+2026-06-14 15:01:51,549  INFO  agents.morning_pipeline    Validation: 1 attempt(s)
+2026-06-14 15:01:51,549  INFO  agents.morning_pipeline    Running 90-day backtest on SPY...
+2026-06-14 15:01:56,825  INFO  backtest.data  Alpaca: fetched 556 bars for SPY
+2026-06-14 15:01:56,825  INFO  backtest.engine  Fetched 556 bars for SPY
+2026-06-14 15:01:56,874  INFO  backtest.engine  Warmup period: 60 bars
+2026-06-14 15:01:57,340  INFO  backtest.engine  Backtest complete: 3 trades, return=-0.31%, sharpe=-1.58
+2026-06-14 15:01:57,379  INFO  agents.morning_pipeline    Backtest: trades=3 sharpe=-1.58 pf=0.41 return=-0.3%
+2026-06-14 15:01:57,388  INFO  agents.morning_pipeline    Strategy filtered out — metrics below threshold
+2026-06-14 15:02:02,324  INFO  db.strategy_repo  Created strategy 44870def-1ec0-4e1e-b961-d5920c53b918 v1 — EMA-RSI Pullback Entry on SPY
+2026-06-14 15:02:02,339  INFO  agents.morning_pipeline    Saved to registry: 44870def-1ec0-4e1e-b961-d5920c53b918
+2026-06-14 15:02:02,341  INFO  agents.morning_pipeline  
+Processing hypothesis 2/2: rsi_oversold_recovery
+2026-06-14 15:02:02,341  INFO  agents.morning_pipeline  Goal: RSI Oversold Recovery on SPY using RSI, MACD, and ATR-based risk sizing: Monitor...
+2026-06-14 15:02:02,341  INFO  agents.morning_pipeline    Creating strategy DSL...
+2026-06-14 15:02:02,345  INFO  agents.strategy_creation_agent  Strategy Creation Agent started — source=hypothesis_agent goal='RSI Oversold Recovery on SPY using RSI, MACD, and ATR-based ...'
+2026-06-14 15:02:02,345  INFO  agents.strategy_creation_agent  Step 1: Parsing intent...
+2026-06-14 15:02:19,084  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:02:19,092  INFO  agents.strategy_creation_agent  Step 1 complete: RSI Oversold Recovery with MACD Confirmation on SPY (1H) — 3 entry concepts
+2026-06-14 15:02:19,092  INFO  agents.strategy_creation_agent  Step 2: Mapping indicators...
+2026-06-14 15:02:54,416  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:02:54,417  ERROR  agents.strategy_creation_agent  Agent failed at step intent_parsed: Expecting ',' delimiter: line 126 column 6 (char 4480)
+2026-06-14 15:02:54,417  INFO  agents.morning_pipeline  
+======================================================================
+2026-06-14 15:02:54,417  INFO  agents.morning_pipeline  Morning Pipeline Complete
+2026-06-14 15:02:54,426  INFO  agents.morning_pipeline    Regime:     bull_volatile
+2026-06-14 15:02:54,426  INFO  agents.morning_pipeline    Hypotheses: 2
+2026-06-14 15:02:54,426  INFO  agents.morning_pipeline    Created:    1
+2026-06-14 15:02:54,426  INFO  agents.morning_pipeline    Viable:     0
+2026-06-14 15:02:54,426  INFO  agents.morning_pipeline    Saved:      1
+2026-06-14 15:02:54,434  INFO  agents.morning_pipeline    Duration:   184s
+2026-06-14 15:02:54,434  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 15:16:40,671  INFO  db.connection  Neon database connection OK
+2026-06-14 15:19:31,235  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 15:19:31,242  INFO  agents.morning_pipeline  Morning Pipeline started — 2026-06-14 19:19 UTC
+2026-06-14 15:19:31,242  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 15:19:31,242  INFO  agents.morning_pipeline  Step 1: Running Market Intelligence Agent...
+2026-06-14 15:19:31,251  INFO  agents.market_intelligence_agent  Market Intelligence Agent starting...
+2026-06-14 15:19:31,251  INFO  agents.market_intelligence_agent  Fetching market data from Alpaca...
+2026-06-14 15:19:35,060  INFO  agents.market_intelligence_agent  Fetched market data for 10 symbols
+2026-06-14 15:19:35,060  INFO  agents.market_intelligence_agent  Classifying market regime...
+2026-06-14 15:19:35,060  INFO  agents.market_intelligence_agent  Checking economic calendar...
+2026-06-14 15:19:35,060  INFO  agents.market_intelligence_agent  Market brief complete — regime=bull_volatile confidence=0.65 vix=high events=1
+2026-06-14 15:19:35,060  INFO  agents.morning_pipeline  Regime: bull_volatile (confidence: 65%)
+2026-06-14 15:19:35,060  INFO  agents.morning_pipeline  VIX level: high | Breadth: mixed
+2026-06-14 15:19:35,060  INFO  agents.morning_pipeline  Event: FOMC Rate Decision in 3 days
+2026-06-14 15:19:35,060  INFO  agents.morning_pipeline  Step 2: Generating strategy hypotheses...
+2026-06-14 15:19:35,066  INFO  agents.hypothesis_generator  Generating 2 hypotheses for bull_volatile regime...
+2026-06-14 15:20:07,167  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:20:07,196  INFO  agents.hypothesis_generator  Generated 2 hypotheses
+2026-06-14 15:20:07,196  INFO  agents.morning_pipeline  Generated 2 hypotheses
+2026-06-14 15:20:07,196  INFO  agents.morning_pipeline  
+Processing hypothesis 1/2: pullback_entry
+2026-06-14 15:20:07,196  INFO  agents.morning_pipeline  Goal: Pullback Entry on SPY using EMA21/EMA50 confluence with RSI oversold confirmatio...
+2026-06-14 15:20:07,196  INFO  agents.morning_pipeline    Creating strategy DSL...
+2026-06-14 15:20:07,198  INFO  agents.strategy_creation_agent  Strategy Creation Agent started — source=hypothesis_agent goal='Pullback Entry on SPY using EMA21/EMA50 confluence with RSI ...'
+2026-06-14 15:20:07,198  INFO  agents.strategy_creation_agent  Step 1: Parsing intent...
+2026-06-14 15:20:23,434  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:20:23,434  INFO  agents.strategy_creation_agent  Step 1 complete: SPY EMA Confluence Pullback Entry — 5 entry concepts
+2026-06-14 15:20:23,434  INFO  agents.strategy_creation_agent  Step 2: Mapping indicators...
+2026-06-14 15:20:51,598  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:20:51,602  INFO  agents.strategy_creation_agent  Step 2 complete: 6 indicators, 5 entry conditions
+2026-06-14 15:20:51,606  INFO  agents.strategy_creation_agent  Step 3: DSL built — 6 indicators, 8 conditions
+2026-06-14 15:20:51,608  INFO  agents.strategy_creation_agent  Step 4: Validation attempt 1...
+2026-06-14 15:20:51,608  INFO  agents.strategy_creation_agent  Step 4: Valid on attempt 1
+2026-06-14 15:20:51,610  INFO  agents.strategy_creation_agent  Step 6: Generating explanation...
+2026-06-14 15:21:27,439  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:21:27,442  INFO  agents.strategy_creation_agent  Step 6: Explanation complete
+2026-06-14 15:21:27,442  INFO  agents.strategy_creation_agent  Agent complete — 5 steps, valid=True, gaps=10
+2026-06-14 15:21:27,442  INFO  agents.morning_pipeline    Strategy created: SPY EMA Confluence Pullback Entry
+2026-06-14 15:21:27,442  INFO  agents.morning_pipeline    Validation: 1 attempt(s)
+2026-06-14 15:21:30,581  INFO  db.strategy_repo  Created strategy f807080d-5f5a-4ba7-b350-bc0a13ed6f00 v1 — SPY EMA Confluence Pullback Entry
+2026-06-14 15:21:30,581  INFO  agents.morning_pipeline    Saved to registry: f807080d-5f5a-4ba7-b350-bc0a13ed6f00
+2026-06-14 15:21:30,581  INFO  agents.morning_pipeline    Running 90-day backtest on SPY...
+2026-06-14 15:21:33,977  INFO  backtest.data  Alpaca: fetched 556 bars for SPY
+2026-06-14 15:21:33,977  INFO  backtest.engine  Fetched 556 bars for SPY
+2026-06-14 15:21:33,983  INFO  backtest.engine  Warmup period: 60 bars
+2026-06-14 15:21:34,126  INFO  backtest.engine  Backtest complete: 0 trades, return=0.00%, sharpe=0.00
+2026-06-14 15:21:35,733  INFO  db.backtest_repo  Saved backtest run_id=2 strategy=f807080d-5f5a-4ba7-b350-bc0a13ed6f00 symbol=SPY
+2026-06-14 15:21:36,076  INFO  agents.morning_pipeline    Backtest: trades=0 sharpe=0.00 pf=0.00 return=0.0%
+2026-06-14 15:21:36,085  INFO  agents.morning_pipeline  
+Processing hypothesis 2/2: rsi_oversold_recovery
+2026-06-14 15:21:36,085  INFO  agents.morning_pipeline  Goal: RSI Oversold Recovery on SPY using RSI(14) dipping below 35 on the 1-hour chart ...
+2026-06-14 15:21:36,088  INFO  agents.morning_pipeline    Creating strategy DSL...
+2026-06-14 15:21:36,088  INFO  agents.strategy_creation_agent  Strategy Creation Agent started — source=hypothesis_agent goal='RSI Oversold Recovery on SPY using RSI(14) dipping below 35 ...'
+2026-06-14 15:21:36,088  INFO  agents.strategy_creation_agent  Step 1: Parsing intent...
+2026-06-14 15:21:51,086  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:21:51,094  INFO  agents.strategy_creation_agent  Step 1 complete: RSI Oversold MACD Inflection Recovery — 4 entry concepts
+2026-06-14 15:21:51,096  INFO  agents.strategy_creation_agent  Step 2: Mapping indicators...
+2026-06-14 15:22:22,650  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:22:22,650  INFO  agents.strategy_creation_agent  Step 2 complete: 7 indicators, 3 entry conditions
+2026-06-14 15:22:22,650  INFO  agents.strategy_creation_agent  Step 3: DSL built — 7 indicators, 7 conditions
+2026-06-14 15:22:22,650  INFO  agents.strategy_creation_agent  Step 4: Validation attempt 1...
+2026-06-14 15:22:22,650  INFO  agents.strategy_creation_agent  Step 4: 1 errors — attempting self-correction
+2026-06-14 15:22:41,272  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:22:41,274  INFO  agents.strategy_creation_agent  Step 5: Self-correction attempt 1 applied
+2026-06-14 15:22:41,274  INFO  agents.strategy_creation_agent  Step 4: Validation attempt 2...
+2026-06-14 15:22:41,274  INFO  agents.strategy_creation_agent  Step 4: Valid on attempt 2
+2026-06-14 15:22:41,276  INFO  agents.strategy_creation_agent  Step 6: Generating explanation...
+2026-06-14 15:28:48,193  INFO  anthropic._base_client  Retrying request to /v1/messages in 0.383555 seconds
+2026-06-14 15:29:17,574  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 15:29:17,576  INFO  agents.strategy_creation_agent  Step 6: Explanation complete
+2026-06-14 15:29:17,576  INFO  agents.strategy_creation_agent  Agent complete — 5 steps, valid=True, gaps=6
+2026-06-14 15:29:17,576  INFO  agents.morning_pipeline    Strategy created: RSI Oversold MACD Inflection Recovery
+2026-06-14 15:29:17,576  INFO  agents.morning_pipeline    Validation: 2 attempt(s)
+2026-06-14 15:29:22,992  INFO  db.strategy_repo  Created strategy c21056a2-2b30-4038-86f1-b60fd90af98a v1 — RSI Oversold MACD Inflection Recovery
+2026-06-14 15:29:22,992  INFO  agents.morning_pipeline    Saved to registry: c21056a2-2b30-4038-86f1-b60fd90af98a
+2026-06-14 15:29:23,000  INFO  agents.morning_pipeline    Running 90-day backtest on SPY...
+2026-06-14 15:29:28,892  INFO  backtest.data  Alpaca: fetched 556 bars for SPY
+2026-06-14 15:29:28,894  INFO  backtest.engine  Fetched 556 bars for SPY
+2026-06-14 15:29:28,900  INFO  backtest.engine  Warmup period: 200 bars
+2026-06-14 15:29:28,975  INFO  backtest.engine  Backtest complete: 0 trades, return=0.00%, sharpe=0.00
+2026-06-14 15:29:30,303  INFO  db.backtest_repo  Saved backtest run_id=3 strategy=c21056a2-2b30-4038-86f1-b60fd90af98a symbol=SPY
+2026-06-14 15:29:30,347  INFO  agents.morning_pipeline    Backtest: trades=0 sharpe=0.00 pf=0.00 return=0.0%
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline  
+======================================================================
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline  Morning Pipeline Complete
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline    Regime:     bull_volatile
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline    Hypotheses: 2
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline    Created:    2
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline    Viable:     2
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline    Saved:      2
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline    Duration:   599s
+2026-06-14 15:29:30,356  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 15:35:00,567  ERROR  db.connection  Neon database connection failed: (psycopg2.OperationalError) SSL connection has been closed unexpectedly
+
+[SQL: show standard_conforming_strings]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-06-14 15:46:44,399  INFO  db.connection  Neon database connection OK

@@ -1,0 +1,32 @@
+# Weekly symbol classifier
+name: Symbol Classifier
+
+on:
+  schedule:
+    - cron: '0 6 * * 0'   # Sunday 6 AM UTC
+  workflow_dispatch:
+    inputs:
+      max_symbols:
+        description: 'Max symbols to classify'
+        required: false
+        default: '37'
+
+jobs:
+  classify:
+    name: Classify Symbol Universe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - name: Run classifier
+        env:
+          ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: python agents/symbol_classifier.py
+      - if: always()
+        run: echo "Classifier finished at $(date -u)"

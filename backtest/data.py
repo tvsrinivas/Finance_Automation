@@ -55,6 +55,7 @@ def fetch_alpaca(
             start=datetime.fromisoformat(start),
             end=datetime.fromisoformat(end),
             adjustment="all",  # split + dividend adjusted
+            feed="iex",
         )
 
         bars = client.get_stock_bars(request)
