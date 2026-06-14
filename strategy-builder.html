@@ -37,7 +37,119 @@
     line-height: 1.5;
   }
 
-  /* ── Header ── */
+  /* ── Agent Panel ── */
+.agent-panel {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  overflow: hidden;
+  transition: max-height .3s ease;
+}
+.agent-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px;
+  cursor: pointer;
+  background: linear-gradient(90deg, rgba(199,146,234,.06) 0%, transparent 100%);
+  border-bottom: 1px solid transparent;
+  transition: all .15s;
+  user-select: none;
+}
+.agent-toggle:hover { background: linear-gradient(90deg, rgba(199,146,234,.1) 0%, transparent 100%); }
+.agent-toggle-left { display: flex; align-items: center; gap: 10px; }
+.agent-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.agent-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; background: rgba(199,146,234,.12); color: #c792ea; border: 1px solid rgba(199,146,234,.25); }
+.agent-chevron { font-size: 10px; color: var(--text3); transition: transform .2s; }
+.agent-chevron.open { transform: rotate(180deg); }
+.agent-body { padding: 16px 24px 20px; border-top: 1px solid var(--border); }
+.agent-description { font-size: 11px; color: var(--text3); margin-bottom: 12px; line-height: 1.6; }
+.agent-input-row { display: flex; gap: 10px; align-items: flex-start; }
+.agent-textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 10px 12px;
+  min-height: 80px;
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color .15s;
+}
+.agent-textarea:focus { border-color: #c792ea; }
+.agent-textarea::placeholder { color: var(--text3); }
+.agent-controls { display: flex; flex-direction: column; gap: 6px; min-width: 120px; }
+.agent-tf-sel {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+  color: var(--text2); font-size: 11px; padding: 5px 8px; outline: none; cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' fill='none'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%235a6078' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 6px center; padding-right: 20px;
+}
+.agent-generate-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  cursor: pointer; background: rgba(199,146,234,.15); color: #c792ea;
+  border: 1px solid rgba(199,146,234,.3); transition: all .15s; white-space: nowrap;
+}
+.agent-generate-btn:hover:not(:disabled) { background: rgba(199,146,234,.25); }
+.agent-generate-btn:disabled { opacity: .4; cursor: not-allowed; }
+.agent-examples { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.agent-example {
+  font-size: 10px; padding: 3px 10px; border-radius: 12px;
+  border: 1px solid var(--border2); background: var(--surface2);
+  color: var(--text3); cursor: pointer; transition: all .15s;
+}
+.agent-example:hover { border-color: #c792ea; color: #c792ea; background: rgba(199,146,234,.08); }
+.agent-result {
+  margin-top: 14px; padding: 14px 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; display: none;
+}
+.agent-result.show { display: block; }
+.agent-result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.agent-result-title { font-size: 11px; font-weight: 600; color: var(--text); }
+.agent-result-actions { display: flex; gap: 6px; }
+.agent-action-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 5px;
+  cursor: pointer; transition: all .15s; border: 1px solid;
+}
+.agent-action-btn.load { background: var(--green); color: white; border-color: var(--green); }
+.agent-action-btn.load:hover { opacity: .85; }
+.agent-action-btn.reject { background: transparent; color: var(--text3); border-color: var(--border2); }
+.agent-action-btn.reject:hover { color: var(--red); border-color: var(--red); }
+.agent-summary { font-size: 12px; color: var(--text2); line-height: 1.7; margin-bottom: 10px; }
+.agent-conditions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.agent-cond-box { background: var(--surface3); border-radius: 6px; padding: 10px 12px; }
+.agent-cond-label { font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; }
+.agent-cond-label.entry { color: var(--green); }
+.agent-cond-label.exit  { color: var(--accent); }
+.agent-cond-item { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-family: var(--mono); line-height: 1.5; }
+.agent-gap-warn {
+  padding: 8px 12px; background: rgba(245,166,35,.06);
+  border: 1px solid rgba(245,166,35,.2); border-radius: 6px;
+  font-size: 11px; color: var(--amber); margin-bottom: 8px;
+  display: flex; gap: 8px;
+}
+.agent-suggestions { margin-top: 8px; }
+.agent-sugg-item { font-size: 11px; color: var(--text3); margin-bottom: 3px; display: flex; gap: 6px; }
+.agent-loading {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 20px 0; color: var(--text3); font-size: 12px;
+}
+.agent-loading-steps { display: flex; flex-direction: column; gap: 5px; width: 100%; max-width: 300px; }
+.agent-step {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text3); padding: 4px 0;
+  transition: color .3s;
+}
+.agent-step.active { color: #c792ea; }
+.agent-step.done   { color: var(--green); }
+.agent-step-icon { width: 16px; text-align: center; flex-shrink: 0; }
+
+/* ── Header ── */
   .header {
     display: flex;
     align-items: center;
@@ -452,6 +564,54 @@
   <button onclick="clearState()" style="font-size:11px;color:var(--text3);background:transparent;border:1px solid var(--border);border-radius:5px;padding:4px 10px;cursor:pointer;margin-left:4px;transition:all .15s;" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)';" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)';">
     ↺ Reset
   </button>
+</div>
+
+<!-- Strategy Creation Agent Panel -->
+<div class="agent-panel">
+  <div class="agent-toggle" onclick="toggleAgentPanel()" id="agentToggle">
+    <div class="agent-toggle-left">
+      <span style="color:#c792ea;font-size:14px;">⬡</span>
+      <span class="agent-title">Strategy Creation Agent</span>
+      <span class="agent-badge">✦ AI-Powered</span>
+      <span style="font-size:11px;color:var(--text3);margin-left:4px;">Describe your idea in plain English</span>
+    </div>
+    <span class="agent-chevron" id="agentChevron">▼</span>
+  </div>
+
+  <div class="agent-body" id="agentBody" style="display:none;">
+    <div class="agent-description">
+      Describe your trading strategy in plain English. The agent will map it to available
+      indicators, build the DSL, validate it, and explain each design choice.
+      It will tell you if any concept falls outside the indicator library.
+    </div>
+
+    <div class="agent-input-row">
+      <textarea id="agentGoal" class="agent-textarea"
+        placeholder="e.g. Buy SPY when momentum is recovering from oversold conditions and the long-term trend is bullish. Exit when overbought or trend breaks."></textarea>
+      <div class="agent-controls">
+        <select id="agentTimeframe" class="agent-tf-sel">
+          <option value="1Hour">1 Hour</option>
+          <option value="1Day">1 Day</option>
+          <option value="15Min">15 Min</option>
+        </select>
+        <button class="agent-generate-btn" id="agentGenerateBtn" onclick="runCreationAgent()">
+          ✦ Generate
+        </button>
+      </div>
+    </div>
+
+    <div class="agent-examples">
+      <span style="font-size:10px;color:var(--text3);align-self:center;">Examples:</span>
+      <button class="agent-example" onclick="setAgentExample(this)">Momentum breakout when trend is bullish</button>
+      <button class="agent-example" onclick="setAgentExample(this)">Mean reversion when RSI is deeply oversold</button>
+      <button class="agent-example" onclick="setAgentExample(this)">Buy when price breaks 52-week high with volume confirmation</button>
+      <button class="agent-example" onclick="setAgentExample(this)">Trend following with MACD crossover and SMA filter</button>
+    </div>
+
+    <div class="agent-result" id="agentResult">
+      <!-- populated by JS -->
+    </div>
+  </div>
 </div>
 
 <div id="validationBanner" style="display:none;" class="validation-banner">
@@ -1274,6 +1434,268 @@ function saveStrategy() {
   el.style.background = 'var(--green)';
   localStorage.setItem('pending_strategy', JSON.stringify(payload, null, 2));
   setTimeout(() => { window.location.href = 'backtest-lab.html'; }, 600);
+}
+
+// ─── Strategy Creation Agent ──────────────────────────────────────────────────
+const API_BASE = 'http://localhost:8000';
+
+function toggleAgentPanel() {
+  const body    = document.getElementById('agentBody');
+  const chevron = document.getElementById('agentChevron');
+  const isOpen  = body.style.display !== 'none';
+  body.style.display    = isOpen ? 'none' : 'block';
+  chevron.classList.toggle('open', !isOpen);
+}
+
+function setAgentExample(btn) {
+  document.getElementById('agentGoal').value = btn.textContent;
+  document.getElementById('agentGoal').focus();
+}
+
+async function runCreationAgent() {
+  const goal = document.getElementById('agentGoal').value.trim();
+  if (!goal) { alert('Please describe your trading strategy first'); return; }
+
+  const tf      = document.getElementById('agentTimeframe').value;
+  const btn     = document.getElementById('agentGenerateBtn');
+  const result  = document.getElementById('agentResult');
+
+  btn.disabled = true;
+  btn.textContent = '✦ Generating...';
+  result.className = 'agent-result show';
+  result.innerHTML = buildLoadingHTML();
+
+  // Animate steps
+  const stepIds = ['step-intent','step-map','step-dsl','step-validate','step-explain'];
+  let stepIdx = 0;
+  const stepTimer = setInterval(() => {
+    if (stepIdx > 0 && stepIdx <= stepIds.length) {
+      const prev = document.getElementById(stepIds[stepIdx-1]);
+      if (prev) { prev.classList.remove('active'); prev.classList.add('done'); prev.querySelector('.agent-step-icon').textContent = '✓'; }
+    }
+    if (stepIdx < stepIds.length) {
+      const curr = document.getElementById(stepIds[stepIdx]);
+      if (curr) curr.classList.add('active');
+    }
+    stepIdx++;
+  }, 2500);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/agent/create-strategy`, {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({ goal, timeframe: tf, provider: 'anthropic', model: 'claude-sonnet-4-6', source: 'human' }),
+    });
+
+    clearInterval(stepTimer);
+    const data = await res.json();
+
+    if (!res.ok) {
+      result.innerHTML = buildErrorHTML(data?.detail?.error || `HTTP ${res.status}`);
+    } else {
+      result.innerHTML = buildResultHTML(data);
+      // Store generated strategy for loading
+      window._agentStrategy = data.strategy_json;
+    }
+  } catch(err) {
+    clearInterval(stepTimer);
+    result.innerHTML = buildErrorHTML('Could not reach backend. Make sure uvicorn is running on port 8000.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦ Generate';
+}
+
+function buildLoadingHTML() {
+  const steps = [
+    ['step-intent',   '1. Parsing your trading intent...'],
+    ['step-map',      '2. Mapping to indicator library...'],
+    ['step-dsl',      '3. Building strategy DSL...'],
+    ['step-validate', '4. Validating and correcting...'],
+    ['step-explain',  '5. Generating explanation...'],
+  ];
+  return `
+    <div class="agent-loading">
+      <div class="agent-loading-steps">
+        ${steps.map(([id, label]) => `
+          <div class="agent-step" id="${id}">
+            <span class="agent-step-icon">○</span>
+            <span>${label}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function buildErrorHTML(msg) {
+  return `
+    <div style="color:var(--red);font-size:12px;display:flex;gap:8px;align-items:flex-start;">
+      <span>⚠</span>
+      <div>
+        <div style="font-weight:600;margin-bottom:4px;">Generation failed</div>
+        <div style="color:var(--text3);">${msg}</div>
+      </div>
+    </div>`;
+}
+
+function buildResultHTML(data) {
+  const ex   = data.explanation || {};
+  const dsl  = data.strategy_json || {};
+  const gaps = data.library_gaps || [];
+  const sugg = ex.improvement_suggestions || [];
+  const freq = ex.estimated_signal_frequency || '';
+  const attempts = data.attempts || 1;
+
+  // Build readable condition list from DSL
+  const entryIds = dsl.entry_rules?.conditions || [];
+  const exitIds  = dsl.exit_rules?.conditions  || [];
+  const conds    = dsl.conditions || {};
+  const inds     = dsl.indicators || {};
+
+  function fmtCond(id) {
+    const c = conds[id];
+    if (!c) return id;
+    const lInd = inds[c.left];
+    const lLabel = lInd ? `${lInd.type}(${Object.values(lInd.params||{}).join(',')})` : c.left;
+    const rhs = c.right?.type === 'scalar'
+      ? c.right.value
+      : (inds[c.right?.ref] ? `${inds[c.right.ref].type}(${Object.values(inds[c.right.ref].params||{}).join(',')})` : c.right?.ref);
+    return `${lLabel} ${c.operator.replace('_',' ')} ${rhs}`;
+  }
+
+  const entryExpl = ex.entry_explanation || [];
+  const exitExpl  = ex.exit_explanation  || [];
+
+  return `
+    <div class="agent-result-header">
+      <div>
+        <div class="agent-result-title">✓ ${dsl.strategy_name || 'Generated Strategy'}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">
+          ${attempts} validation cycle${attempts>1?'s':''} · ${entryIds.length} entry + ${exitIds.length} exit conditions
+          ${freq ? ` · ${freq}` : ''}
+        </div>
+      </div>
+      <div class="agent-result-actions">
+        <button class="agent-action-btn reject" onclick="rejectAgentStrategy()">Reject</button>
+        <button class="agent-action-btn load"   onclick="loadAgentStrategy()">Load into Builder →</button>
+      </div>
+    </div>
+
+    ${ex.summary ? `<div class="agent-summary">${ex.summary}</div>` : ''}
+
+    <div class="agent-conditions">
+      <div class="agent-cond-box">
+        <div class="agent-cond-label entry">↑ Entry (${dsl.entry_rules?.logic || 'AND'})</div>
+        ${entryIds.map(id => {
+          const expl = entryExpl.find(e => e.condition_id === id);
+          return `<div class="agent-cond-item" title="${fmtCond(id)}">
+            ${expl ? expl.plain_english : fmtCond(id)}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="agent-cond-box">
+        <div class="agent-cond-label exit">↓ Exit (${dsl.exit_rules?.logic || 'OR'})</div>
+        ${exitIds.map(id => {
+          const expl = exitExpl.find(e => e.condition_id === id);
+          return `<div class="agent-cond-item" title="${fmtCond(id)}">
+            ${expl ? expl.plain_english : fmtCond(id)}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    ${gaps.filter(g => g.proxy_used).map(g => `
+      <div class="agent-gap-warn">
+        <span style="flex-shrink:0;">⚠</span>
+        <div>
+          <span style="font-weight:600;">${g.concept}</span> — not directly available.
+          Proxy: ${g.proxy_used}
+          ${g.limitation ? `<div style="margin-top:2px;color:rgba(245,166,35,.7);">${g.limitation}</div>` : ''}
+        </div>
+      </div>`).join('')}
+
+    ${sugg.length ? `
+      <div class="agent-suggestions">
+        <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;">→ Suggestions</div>
+        ${sugg.map((s,i) => `<div class="agent-sugg-item"><span style="color:var(--accent);font-weight:700;">${i+1}.</span><span>${s}</span></div>`).join('')}
+      </div>` : ''}
+  `;
+}
+
+function loadAgentStrategy() {
+  const strategy = window._agentStrategy;
+  if (!strategy) return;
+
+  // Load into state
+  const newEntry = [];
+  const newExit  = [];
+  const conds    = strategy.conditions || {};
+  const inds     = strategy.indicators || {};
+  const entryIds = strategy.entry_rules?.conditions || [];
+  const exitIds  = strategy.exit_rules?.conditions  || [];
+
+  function buildCondState(id, logic, section) {
+    const c   = conds[id];
+    if (!c) return null;
+    const lInd = inds[c.left] || {};
+    const left = { type: lInd.type || 'RSI', params: lInd.params || {}, component: lInd.component };
+    let rhs;
+    if (c.right?.type === 'scalar') {
+      rhs = { type: 'scalar', value: c.right.value };
+    } else {
+      const rInd = inds[c.right?.ref] || {};
+      rhs = { type: 'indicator', data: { type: rInd.type || 'SMA', params: rInd.params || {}, component: rInd.component } };
+    }
+    return { id: id + '_' + Date.now(), left, operator: c.operator, rhs, logic };
+  }
+
+  entryIds.forEach((id, i) => {
+    const s = buildCondState(id, i === 0 ? 'AND' : (strategy.entry_rules?.logic || 'AND'), 'entry');
+    if (s) newEntry.push(s);
+  });
+  exitIds.forEach((id, i) => {
+    const s = buildCondState(id, i === 0 ? 'OR' : (strategy.exit_rules?.logic || 'OR'), 'exit');
+    if (s) newExit.push(s);
+  });
+
+  // Update global state
+  state.entry = newEntry.length ? newEntry : state.entry;
+  state.exit  = newExit.length  ? newExit  : state.exit;
+
+  // Update strategy name
+  if (strategy.strategy_name) {
+    document.getElementById('strategyName').value = strategy.strategy_name;
+  }
+
+  // Update risk rules
+  const rr = strategy.risk_rules || {};
+  if (rr.stop_loss?.value)   document.getElementById('stopLoss').value   = rr.stop_loss.value;
+  if (rr.take_profit?.value) document.getElementById('takeProfit').value = rr.take_profit.value;
+  if (rr.position_size?.value) document.getElementById('posSize').value  = rr.position_size.value;
+
+  // Reset validation state and re-render
+  state.validated = false;
+  updateStatus();
+  render();
+  saveStateToStorage();
+
+  // Close agent panel
+  document.getElementById('agentBody').style.display  = 'none';
+  document.getElementById('agentChevron').classList.remove('open');
+
+  // Show success banner
+  const banner = document.getElementById('validationBanner');
+  banner.style.display = '';
+  banner.className = 'validation-banner banner-success';
+  document.getElementById('bannerIcon').textContent = '✦';
+  document.getElementById('bannerText').textContent = 'Strategy loaded from AI agent — review conditions then validate';
+
+  setTimeout(() => { banner.style.display = 'none'; }, 5000);
+}
+
+function rejectAgentStrategy() {
+  window._agentStrategy = null;
+  document.getElementById('agentResult').className = 'agent-result';
+  document.getElementById('agentGoal').value = '';
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────

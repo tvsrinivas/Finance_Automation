@@ -1,9 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from typing import Any, Optional
 import uuid
 import json
+import os
+import re
+import sys
 from datetime import datetime
 
 app = FastAPI(title="Strategy Builder API")
@@ -404,10 +408,11 @@ def health():
 
 # ─── Backtest Routes ──────────────────────────────────────────────────────────
 
-import sys
-sys.path.insert(0, '/home/claude/strategy-builder/backend')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from backtest import run_backtest, validate_symbol as _validate_symbol
+from backtest.engine import run_backtest
+from backtest.data import validate_symbol as _validate_symbol
+from agents.strategy_creation_agent import run_strategy_creation_agent
 
 class BacktestRequest(BaseModel):
     strategy: dict
@@ -452,8 +457,7 @@ from db import (
     change_status, save_backtest_result, approve_backtest,
     get_backtest_results, get_backtest_result,
 )
-from sqlalchemy.orm import Session
-from fastapi import Depends
+from db.models import StrategyMaster, DeploymentStatus, PaperPosition
 
 # Create tables on startup
 @app.on_event("startup")
@@ -706,7 +710,6 @@ def registry_get_backtest(run_id: int, db: Session = Depends(get_db)):
 
 # ─── Paper Trading Routes ─────────────────────────────────────────────────────
 
-from db.models import PaperPosition
 
 @app.get("/api/paper/deployments")
 def list_deployments(db: Session = Depends(get_db)):
@@ -802,3 +805,181 @@ def stop_deployment(
     deployment.stop_reason = "Stopped by user"
     db.commit()
     return {"success": True, "deployment_id": deployment_id}
+
+
+# ─── AI Review Routes ─────────────────────────────────────────────────────────
+
+class AIReviewRequest(BaseModel):
+    backtest_result: dict
+    provider: str = "anthropic"
+    model: str = "claude-sonnet-4-6"
+
+
+@app.post("/api/ai/review")
+def ai_review(req: AIReviewRequest):
+    """
+    AI Backtest Interpretation Agent.
+    Routes to correct LLM provider. API keys stored in .env, never in browser.
+    Supported providers: anthropic | openai | openrouter | groq
+    """
+    d = req.backtest_result
+    m = d.get("metrics", {})
+    exits   = d.get("exit_reason_breakdown", {})
+    monthly = d.get("monthly_returns", {})
+    trades  = d.get("trade_log", [])
+
+    pos_months = len([v for v in monthly.values() if v > 0])
+    neg_months = len([v for v in monthly.values() if v < 0])
+
+    prompt = f"""You are an expert quantitative trading analyst.
+Analyse this backtest result and return ONLY a valid JSON object — no markdown, no text outside JSON.
+
+Strategy: {d.get('strategy_name')}
+Symbol: {d.get('symbol')}  |  Period: {d.get('start_date')} to {d.get('end_date')}  |  Timeframe: {d.get('timeframe')}
+Capital: ${d.get('initial_capital')} to ${d.get('final_capital')}  |  Position sizing: {d.get('position_sizing')}
+
+Metrics:
+- Total return: {m.get('total_return_pct', 0):.2f}%
+- CAGR: {m.get('cagr_pct', 0):.2f}%
+- Sharpe: {m.get('sharpe_ratio', 0):.2f}  |  Sortino: {m.get('sortino_ratio', 0):.2f}
+- Max drawdown: {m.get('max_drawdown_pct', 0):.2f}%
+- Win rate: {m.get('win_rate_pct', 0):.1f}%  |  Profit factor: {m.get('profit_factor', 0)}
+- Total trades: {m.get('total_trades', 0)}  |  Avg hold: {m.get('avg_holding_hours', 0):.1f}h
+- Gross profit: ${m.get('gross_profit', 0):.2f}  |  Gross loss: ${m.get('gross_loss', 0):.2f}
+
+Exit breakdown: {exits}
+Profitable months: {pos_months} / {len(monthly)}  |  Losing months: {neg_months}
+Sample trades first 2: {trades[:2]}
+Sample trades last 2: {trades[-2:]}
+
+Return ONLY this JSON:
+{{
+  "verdict": "strong or borderline or weak or failing",
+  "verdict_text": "one direct sentence on overall performance",
+  "score": 0 to 100,
+  "strengths": ["up to 3 specific strengths citing actual numbers"],
+  "issues": ["up to 3 specific problems citing actual numbers"],
+  "suggestions": ["up to 3 concrete actionable improvements"],
+  "regime_warning": "one sentence about conditions this may fail in or null",
+  "ready_for_paper_trading": true or false,
+  "ready_reason": "one sentence explaining paper trading readiness"
+}}
+
+Be direct. Reference actual numbers. Do not be encouraging if the strategy is poor."""
+
+    try:
+        text = _call_llm_provider(req.provider, req.model, prompt)
+
+        clean  = re.sub(r'```json|```', '', text).strip()
+        result = json.loads(clean)
+        return {"success": True, "review": result}
+
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"LLM returned invalid JSON: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def _call_llm_provider(provider: str, model: str, prompt: str) -> str:
+    """
+    Routes prompt to the correct LLM provider.
+    API keys read from environment variables:
+      ANTHROPIC_API_KEY  — for anthropic
+      OPENAI_API_KEY     — for openai
+      OPENROUTER_API_KEY — for openrouter
+      GROQ_API_KEY       — for groq
+    """
+    if provider == "anthropic":
+        import anthropic
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not set in .env")
+        client  = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model=model,
+            max_tokens=1200,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text
+
+    elif provider in ("openai", "openrouter", "groq"):
+        import httpx
+        base_urls = {
+            "openai":     "https://api.openai.com/v1",
+            "openrouter": "https://openrouter.ai/api/v1",
+            "groq":       "https://api.groq.com/openai/v1",
+        }
+        env_keys = {
+            "openai":     "OPENAI_API_KEY",
+            "openrouter": "OPENROUTER_API_KEY",
+            "groq":       "GROQ_API_KEY",
+        }
+        api_key = os.getenv(env_keys[provider])
+        if not api_key:
+            raise ValueError(f"{env_keys[provider]} not set in .env")
+
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        if provider == "openrouter":
+            headers["HTTP-Referer"] = "https://strategy-builder"
+
+        response = httpx.post(
+            f"{base_urls[provider]}/chat/completions",
+            headers=headers,
+            json={
+                "model":      model,
+                "max_tokens": 1200,
+                "messages":   [{"role": "user", "content": prompt}],
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+
+
+# ─── Strategy Creation Agent Routes ───────────────────────────────────────────
+
+
+class StrategyCreationRequest(BaseModel):
+    goal: str
+    timeframe: str = "1Hour"
+    market_context: Optional[dict] = {}
+    provider: str = "anthropic"
+    model: str = "claude-sonnet-4-6"
+    source: str = "human"   # "human" | "hypothesis_agent" (Phase 2)
+
+
+@app.post("/api/agent/create-strategy")
+def agent_create_strategy(req: StrategyCreationRequest):
+    """
+    Strategy Creation Agent — converts plain English to validated DSL.
+
+    Phase 1: user describes idea in natural language
+    Phase 2: Hypothesis Agent passes structured context (same endpoint)
+
+    Returns strategy JSON ready to load into Strategy Builder.
+    """
+    if not req.goal or not req.goal.strip():
+        raise HTTPException(status_code=400, detail="Goal is required")
+
+    result = run_strategy_creation_agent(
+        goal=req.goal,
+        timeframe=req.timeframe,
+        market_context=req.market_context or {},
+        provider=req.provider,
+        model=req.model,
+        source=req.source,
+    )
+
+    if not result["success"]:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error":           result.get("error"),
+                "steps_completed": result.get("steps_completed", []),
+            }
+        )
+
+    return result

@@ -50,6 +50,9 @@ class PositionManager:
         self.take_profit_price   = None
         self.entry_capital       = None
 
+        # Entry bar protection — don't check SL/TP on the same bar we entered
+        self.entry_bar_protected = False
+
         # Pending signals (execute next bar)
         self.pending_entry       = False
         self.pending_exit        = False
@@ -90,9 +93,10 @@ class PositionManager:
         self.in_position    = True
         self.entry_price    = exec_price
         self.entry_time     = bar.name
-        self.entry_bar      = bar_idx
-        self.shares         = shares
-        self.entry_capital  = self.capital
+        self.entry_bar           = bar_idx
+        self.entry_bar_protected = True   # block SL/TP checks on entry bar
+        self.shares              = shares
+        self.entry_capital       = self.capital
 
         if self.stop_loss_pct:
             self.stop_loss_price   = exec_price * (1 - self.stop_loss_pct)
@@ -143,7 +147,8 @@ class PositionManager:
         self.stop_loss_price   = None
         self.take_profit_price = None
         self.entry_capital     = None
-        self.pending_exit      = False
+        self.pending_exit        = False
+        self.entry_bar_protected = False
 
     def process_bar(self, bar: pd.Series, bar_idx: int, signals: list[str]):
         """
@@ -160,14 +165,14 @@ class PositionManager:
         if self.in_position:
             exited = False
 
-            # Stop loss: bar low touched SL price
-            if self.stop_loss_price and bar["low"] <= self.stop_loss_price:
+            # Stop loss: bar low touched SL price (never on entry bar)
+            if self.stop_loss_price and bar["low"] <= self.stop_loss_price and not self.entry_bar_protected:
                 sl_exec = self._apply_slippage(self.stop_loss_price, "sell")
                 self._exit_position(bar, bar_idx, sl_exec, "stop_loss")
                 exited = True
 
-            # Take profit: bar high touched TP price
-            if not exited and self.take_profit_price and bar["high"] >= self.take_profit_price:
+            # Take profit: bar high touched TP price (never on entry bar)
+            if not exited and self.take_profit_price and bar["high"] >= self.take_profit_price and not self.entry_bar_protected:
                 tp_exec = self._apply_slippage(self.take_profit_price, "sell")
                 self._exit_position(bar, bar_idx, tp_exec, "take_profit")
                 exited = True
@@ -176,6 +181,9 @@ class PositionManager:
             if not exited and self.pending_exit:
                 exec_price = self._apply_slippage(bar["open"], "sell")
                 self._exit_position(bar, bar_idx, exec_price, "signal")
+
+        # Reset entry bar protection — SL/TP active from next bar onwards
+        self.entry_bar_protected = False
 
         # Queue signals for next bar execution
         for sig in signals:

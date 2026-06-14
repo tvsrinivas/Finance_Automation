@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Builder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--surface:#13161d;--surface2:#1a1e28;--surface3:#222736;
+  --border:#2a2f3d;--border2:#333849;
+  --accent:#4f8ef7;--accent2:#6ba3ff;
+  --green:#3ecf8e;--amber:#f5a623;--red:#f06060;--purple:#c792ea;
+  --text:#e8ecf5;--text2:#8b92a8;--text3:#5a6078;
+  --nav-w:56px;--topbar-h:48px;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:13px;}
+
+/* ── Nav Rail ── */
+.nav-rail{
+  position:fixed;left:0;top:0;bottom:0;width:var(--nav-w);
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 0;z-index:200;
+}
+.nav-logo{
+  width:32px;height:32px;background:var(--accent);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:white;margin-bottom:16px;flex-shrink:0;
+}
+.nav-items{display:flex;flex-direction:column;gap:2px;flex:1;width:100%;padding:0 6px;}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:8px 4px;border-radius:8px;cursor:pointer;
+  transition:all .15s;border:1px solid transparent;
+  color:var(--text3);text-decoration:none;position:relative;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text2);}
+.nav-item.active{background:rgba(79,142,247,.12);color:var(--accent);border-color:rgba(79,142,247,.2);}
+.nav-item.active .nav-icon{color:var(--accent);}
+.nav-icon{font-size:16px;line-height:1;}
+.nav-label{font-size:9px;font-weight:500;letter-spacing:.02em;text-align:center;line-height:1.2;}
+.nav-bottom{margin-top:auto;width:100%;padding:0 6px;display:flex;flex-direction:column;gap:2px;}
+.nav-dot{
+  position:absolute;top:6px;right:6px;width:6px;height:6px;
+  border-radius:50%;background:var(--green);
+}
+
+/* ── Top Bar ── */
+.topbar{
+  position:fixed;left:var(--nav-w);top:0;right:0;height:var(--topbar-h);
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:12px;z-index:100;
+}
+.topbar-name-input{
+  background:transparent;border:none;color:var(--text);
+  font-family:var(--mono);font-size:13px;font-weight:500;
+  outline:none;width:200px;padding:4px 8px;border-radius:5px;
+  transition:background .15s;
+}
+.topbar-name-input:focus{background:var(--surface2);}
+.topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;}
+.topbar-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);}
+.status-dot.valid{background:var(--green);box-shadow:0 0 6px var(--green);}
+.status-dot.error{background:var(--red);}
+.status-dot.warn{background:var(--amber);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.topbar-btn{
+  display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;
+  font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;
+  border:1px solid var(--border2);background:transparent;color:var(--text2);
+  white-space:nowrap;
+}
+.topbar-btn:hover{border-color:var(--accent);color:var(--accent);}
+.topbar-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+.topbar-btn.primary:hover{background:var(--accent2);}
+.topbar-btn.primary:disabled{background:var(--surface3);color:var(--text3);border-color:transparent;cursor:not-allowed;}
+.topbar-btn.green{background:var(--green);color:white;border-color:var(--green);}
+.topbar-btn.green:hover{opacity:.85;}
+
+/* ── Main content area ── */
+.main{
+  position:fixed;left:var(--nav-w);top:var(--topbar-h);right:0;bottom:0;
+  overflow-y:auto;
+}
+.panel{display:none;height:100%;overflow-y:auto;}
+.panel.active{display:block;}
+
+/* ─────────────────────────────────────────────
+   PANEL 1 — AI CREATOR
+───────────────────────────────────────────── */
+.creator-wrap{
+  max-width:800px;margin:0 auto;padding:40px 24px;
+}
+.creator-hero{text-align:center;margin-bottom:32px;}
+.creator-hero-icon{font-size:36px;margin-bottom:12px;}
+.creator-hero-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px;}
+.creator-hero-sub{font-size:13px;color:var(--text3);line-height:1.7;}
+.creator-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:24px;margin-bottom:16px;
+}
+.creator-textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--sans);
+  font-size:13px;padding:14px 16px;min-height:110px;resize:vertical;
+  outline:none;line-height:1.7;transition:border-color .15s;
+  margin-bottom:12px;
+}
+.creator-textarea:focus{border-color:var(--purple);}
+.creator-textarea::placeholder{color:var(--text3);}
+.creator-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.creator-tf-sel{
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--text2);font-size:12px;padding:7px 10px;outline:none;cursor:pointer;
+  appearance:none;padding-right:24px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+}
+.creator-gen-btn{
+  display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:7px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  background:rgba(199,146,234,.15);color:var(--purple);
+  border:1px solid rgba(199,146,234,.35);transition:all .15s;
+}
+.creator-gen-btn:hover:not(:disabled){background:rgba(199,146,234,.25);}
+.creator-gen-btn:disabled{opacity:.4;cursor:not-allowed;}
+.creator-examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+.creator-ex-label{font-size:10px;color:var(--text3);align-self:center;white-space:nowrap;}
+.ex-pill{
+  font-size:11px;padding:4px 12px;border-radius:12px;
+  border:1px solid var(--border2);background:var(--surface2);
+  color:var(--text3);cursor:pointer;transition:all .15s;
+}
+.ex-pill:hover{border-color:var(--purple);color:var(--purple);background:rgba(199,146,234,.06);}
+
+/* Creator steps */
+.creator-steps{display:flex;flex-direction:column;gap:6px;padding:16px 0;}
+.cr-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text3);padding:6px 0;transition:color .3s;}
+.cr-step.active{color:var(--purple);}
+.cr-step.done{color:var(--green);}
+.cr-step-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;background:var(--surface3);flex-shrink:0;transition:all .3s;}
+.cr-step.active .cr-step-icon{background:rgba(199,146,234,.2);color:var(--purple);}
+.cr-step.done  .cr-step-icon{background:rgba(62,207,142,.15);color:var(--green);}
+
+/* Creator result */
+.creator-result{display:none;}
+.creator-result.show{display:block;}
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.result-name{font-size:15px;font-weight:700;color:var(--text);}
+.result-meta{font-size:11px;color:var(--text3);margin-top:3px;font-family:var(--mono);}
+.result-actions{display:flex;gap:6px;flex-shrink:0;}
+.result-btn{font-size:11px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;border:1px solid;}
+.result-btn.load{background:var(--accent);color:white;border-color:var(--accent);}
+.result-btn.load:hover{background:var(--accent2);}
+.result-btn.reject{background:transparent;color:var(--text3);border-color:var(--border2);}
+.result-btn.reject:hover{color:var(--red);border-color:var(--red);}
+.result-summary{font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px;}
+.result-cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.result-cond-box{background:var(--surface3);border-radius:8px;padding:12px 14px;}
+.result-cond-lbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
+.result-cond-lbl.entry{color:var(--green);}
+.result-cond-lbl.exit{color:var(--accent);}
+.result-cond-item{font-size:11px;color:var(--text2);margin-bottom:5px;line-height:1.5;padding-left:8px;border-left:2px solid var(--border2);}
+.gap-warn{padding:8px 12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:6px;font-size:11px;color:var(--amber);display:flex;gap:8px;margin-bottom:8px;}
+.sugg-list{margin-top:10px;}
+.sugg-item{font-size:11px;color:var(--text3);margin-bottom:4px;display:flex;gap:7px;}
+
+/* ─────────────────────────────────────────────
+   PANEL 2 — STRATEGY DESIGNER
+───────────────────────────────────────────── */
+.designer-wrap{display:flex;flex-direction:column;height:100%;}
+.designer-main{
+  display:grid;grid-template-columns:1fr 1fr;
+  flex:1;overflow:hidden;gap:1px;background:var(--border);
+}
+.designer-panel{background:var(--bg);padding:20px;overflow-y:auto;}
+.designer-risk{
+  background:var(--bg);border-top:1px solid var(--border);
+  padding:14px 20px;
+}
+.risk-toggle-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;background:none;border:none;cursor:pointer;
+  color:var(--text3);font-size:10px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;padding:0;
+}
+.risk-toggle-btn:hover{color:var(--amber);}
+.risk-content{display:none;margin-top:14px;}
+.risk-content.open{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.panel-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:14px;}
+.panel-lbl.entry{color:var(--green);}
+.panel-lbl.exit{color:var(--accent);}
+
+/* condition rows */
+.cond-list{display:flex;flex-direction:column;gap:0;}
+.logic-conn{display:flex;align-items:center;gap:8px;padding:3px 0;position:relative;}
+.logic-conn::before{content:'';position:absolute;left:13px;top:0;bottom:0;width:1px;background:var(--border2);}
+.logic-btn{position:relative;z-index:1;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--mono);}
+.logic-btn:hover,.logic-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.08);}
+.cond-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 13px;display:grid;grid-template-columns:1fr auto 1fr auto;gap:7px;align-items:start;position:relative;transition:border-color .15s;}
+.cond-row:hover{border-color:var(--border2);}
+.cond-row.has-error{border-color:var(--red);background:rgba(240,96,96,.04);}
+.cond-row.is-valid{border-color:rgba(62,207,142,.25);}
+.cond-remove{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:3px;border:none;background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;opacity:0;}
+.cond-row:hover .cond-remove{opacity:1;}
+.cond-remove:hover{background:rgba(240,96,96,.15);color:var(--red);}
+.ind-side{display:flex;flex-direction:column;gap:5px;}
+.ind-type-row{display:flex;gap:5px;align-items:center;}
+.sel{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--sans);font-size:12px;padding:5px 8px;outline:none;cursor:pointer;transition:border-color .15s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+.sel:focus{border-color:var(--accent);}
+.sel.ind-sel{font-weight:500;color:var(--accent2);background-color:rgba(79,142,247,.07);}
+.param-row{display:flex;gap:4px;flex-wrap:wrap;}
+.param-grp{display:flex;align-items:center;gap:3px;}
+.param-lbl{font-size:10px;color:var(--text3);}
+.num-inp{background:var(--surface3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;padding:3px 6px;width:52px;outline:none;transition:border-color .15s;}
+.num-inp:focus{border-color:var(--accent);}
+.src-pills{display:flex;gap:2px;}
+.src-pill{font-size:10px;font-weight:600;font-family:var(--mono);padding:2px 5px;border-radius:3px;border:1px solid var(--border);background:var(--surface3);color:var(--text3);cursor:pointer;transition:all .1s;}
+.src-pill.active{background:rgba(79,142,247,.15);border-color:var(--accent);color:var(--accent);}
+.op-col{display:flex;flex-direction:column;align-items:center;padding-top:4px;gap:4px;}
+.op-sel{width:108px;text-align:center;font-weight:500;}
+.rhs-toggle{display:flex;gap:2px;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:2px;}
+.rhs-tab{font-size:10px;padding:2px 7px;border-radius:3px;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;}
+.rhs-tab.active{background:var(--surface2);color:var(--text);}
+.range-hint{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.add-cond-btn{display:flex;align-items:center;gap:6px;margin-top:10px;padding:7px 12px;border-radius:6px;border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;transition:all .15s;width:100%;justify-content:center;}
+.add-cond-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.05);}
+.inline-error{font-size:11px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px;}
+.risk-field{display:flex;flex-direction:column;gap:5px;}
+.risk-lbl{font-size:10px;color:var(--text3);font-weight:500;}
+.risk-inp-row{display:flex;align-items:center;gap:5px;}
+.risk-num{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;font-weight:500;padding:6px 9px;width:76px;outline:none;transition:border-color .15s;}
+.risk-num:focus{border-color:var(--accent);}
+.risk-unit{font-size:11px;color:var(--text3);}
+
+/* validation banner */
+.val-banner{padding:9px 20px;display:flex;align-items:center;gap:8px;font-size:12px;border-top:1px solid var(--border);}
+.val-banner.err{background:rgba(240,96,96,.08);color:var(--red);}
+.val-banner.warn{background:rgba(245,166,35,.08);color:var(--amber);}
+.val-banner.ok{background:rgba(62,207,142,.08);color:var(--green);}
+
+/* ─────────────────────────────────────────────
+   PANEL 3 — BACKTEST LAB
+───────────────────────────────────────────── */
+.bt-layout{display:grid;grid-template-columns:300px 1fr;height:100%;}
+.bt-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+.bt-main{overflow-y:auto;padding:20px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;color:var(--text2);font-weight:500;}
+.inp{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 10px;width:100%;outline:none;transition:border-color .15s;}
+.inp:focus{border-color:var(--accent);}
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sel-inp{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:12px;padding:7px 10px;width:100%;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235a6078' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+.sel-inp:focus{border-color:var(--accent);}
+.sym-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.sym-pill{font-size:11px;font-weight:600;font-family:var(--mono);padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .1s;}
+.sym-pill:hover,.sym-pill.active{background:rgba(79,142,247,.12);border-color:var(--accent);color:var(--accent);}
+.date-pills{display:flex;gap:4px;margin-top:6px;}
+.date-pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .1s;}
+.date-pill:hover{border-color:var(--accent);color:var(--accent);}
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);}
+.divider{height:1px;background:var(--border);}
+.run-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent);color:white;border:none;width:100%;transition:all .15s;}
+.run-btn:hover:not(:disabled){background:var(--accent2);}
+.run-btn:disabled{background:var(--surface3);color:var(--text3);cursor:not-allowed;}
+
+/* bt results */
+.bt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--text3);}
+.bt-empty-icon{font-size:40px;opacity:.3;}
+.bt-empty-title{font-size:14px;font-weight:500;color:var(--text2);}
+.bt-empty-sub{font-size:12px;text-align:center;max-width:260px;line-height:1.6;}
+.bt-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60%;gap:14px;color:var(--text3);}
+.spin{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;}
+.m-lbl{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.03em;margin-bottom:5px;}
+.m-val{font-size:19px;font-weight:700;font-family:var(--mono);letter-spacing:-.02em;}
+.m-val.pos{color:var(--green);}
+.m-val.neg{color:var(--red);}
+.m-val.neu{color:var(--text);}
+.m-sub{font-size:10px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:15px;}
+.chart-card.full{grid-column:1/-1;}
+.chart-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.chart-wrap{position:relative;height:170px;}
+
+/* AI Review toggle */
+.ai-review-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.ai-review-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px;}
+.ai-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;background:rgba(199,146,234,.12);color:var(--purple);border:1px solid rgba(199,146,234,.25);}
+.toggle-wrap{display:flex;align-items:center;gap:8px;}
+.toggle-label{font-size:11px;color:var(--text3);}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--surface3);border-radius:10px;transition:.3s;border:1px solid var(--border);}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:2px;top:2px;background:var(--text3);border-radius:50%;transition:.3s;}
+.toggle input:checked + .toggle-slider{background:rgba(199,146,234,.2);border-color:var(--purple);}
+.toggle input:checked + .toggle-slider:before{transform:translateX(16px);background:var(--purple);}
+.ai-panel-body{font-size:12px;color:var(--text2);}
+.ai-loading-dots{display:flex;align-items:center;gap:8px;color:var(--text3);font-style:italic;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--purple);animation:ai-p 1.4s ease-in-out infinite;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+@keyframes ai-p{0%,80%,100%{opacity:.3;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+.ai-verdict-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.ai-score{width:48px;height:48px;flex-shrink:0;}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+.ai-col-title{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px;}
+.ai-item{font-size:11px;color:var(--text2);margin-bottom:4px;padding-left:8px;border-left:2px solid;line-height:1.5;}
+.ai-item.good{border-color:var(--green);}
+.ai-item.bad{border-color:var(--red);}
+.ai-item.sug{border-color:var(--accent);}
+.ai-warn-box{padding:9px 12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:6px;font-size:11px;color:var(--amber);display:flex;gap:8px;margin-top:10px;}
+.ready-tag{display:inline-flex;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;margin-top:4px;}
+.ready-tag.yes{background:rgba(62,207,142,.12);color:var(--green);}
+.ready-tag.no{background:rgba(240,96,96,.12);color:var(--red);}
+
+/* approve */
+.approve-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;margin-bottom:16px;flex-wrap:wrap;}
+.approve-info{flex:1;min-width:160px;}
+.approve-title{font-size:12px;font-weight:600;margin-bottom:2px;}
+.approve-sub{font-size:11px;color:var(--text3);}
+.approve-notes-inp{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:6px 10px;width:200px;outline:none;flex-shrink:0;}
+.approve-btn-green{display:flex;align-items:center;gap:5px;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:var(--green);color:white;border:none;transition:opacity .15s;flex-shrink:0;}
+.approve-btn-green:hover{opacity:.85;}
+.approve-btn-green:disabled{opacity:.4;cursor:not-allowed;}
+.approve-success-bar{padding:12px 16px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:8px;color:var(--green);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+
+/* trade table */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+thead th{background:var(--surface);padding:9px 11px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border:none;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:8px 11px;font-family:var(--mono);color:var(--text2);white-space:nowrap;}
+.td-pos{color:var(--green);}
+.td-neg{color:var(--red);}
+.reason-pill{display:inline-flex;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;}
+.r-signal{background:rgba(79,142,247,.12);color:var(--accent);}
+.r-stop{background:rgba(240,96,96,.12);color:var(--red);}
+.r-tp{background:rgba(62,207,142,.12);color:var(--green);}
+
+/* exit breakdown */
+.breakdown-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.breakdown-row:last-child{border:none;}
+.breakdown-lbl{font-size:12px;color:var(--text2);flex:1;}
+.breakdown-bar-wrap{flex:2;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.breakdown-bar{height:100%;border-radius:3px;}
+.breakdown-count{font-size:11px;font-family:var(--mono);color:var(--text3);width:28px;text-align:right;}
+
+/* ─────────────────────────────────────────────
+   PANEL 4 — REGISTRY
+───────────────────────────────────────────── */
+.registry-wrap{padding:24px;}
+.registry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.registry-title{font-size:16px;font-weight:700;}
+.registry-filters{display:flex;gap:8px;}
+.filter-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;padding:6px 10px;outline:none;cursor:pointer;}
+.registry-table-wrap{border-radius:8px;border:1px solid var(--border);overflow:hidden;}
+.registry-row{display:grid;grid-template-columns:2fr 80px 100px 80px 80px 100px 100px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);transition:background .1s;gap:10px;}
+.registry-row:last-child{border:none;}
+.registry-row:hover{background:var(--surface2);}
+.registry-head{background:var(--surface);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);}
+.reg-name{font-size:12px;font-weight:600;}
+.reg-id{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.status-badge{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+.s-draft{background:rgba(139,146,168,.1);color:var(--text3);}
+.s-backtested{background:rgba(79,142,247,.1);color:var(--accent);}
+.s-approved{background:rgba(62,207,142,.1);color:var(--green);}
+.s-paper{background:rgba(199,146,234,.1);color:var(--purple);}
+.s-live{background:rgba(245,166,35,.1);color:var(--amber);}
+.reg-actions{display:flex;gap:4px;}
+.reg-btn{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .15s;}
+.reg-btn:hover{border-color:var(--accent);color:var(--accent);}
+.metric-val{font-family:var(--mono);font-size:12px;}
+
+/* ─────────────────────────────────────────────
+   PANEL 5 — PAPER TRADING
+───────────────────────────────────────────── */
+.paper-wrap{padding:24px;}
+.paper-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.paper-title{font-size:16px;font-weight:700;}
+.deploy-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px;}
+.deploy-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.deploy-name{font-size:14px;font-weight:600;}
+.deploy-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.deploy-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.deploy-metric{text-align:center;}
+.deploy-m-val{font-size:15px;font-weight:700;font-family:var(--mono);}
+.deploy-m-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+.stop-btn{font-size:11px;padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;}
+.stop-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ─────────────────────────────────────────────
+   PANEL 6 — SETTINGS
+───────────────────────────────────────────── */
+.settings-wrap{max-width:560px;margin:0 auto;padding:32px 24px;}
+.settings-title{font-size:16px;font-weight:700;margin-bottom:24px;}
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;}
+.settings-section-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border:none;}
+.settings-row-left{}
+.settings-row-label{font-size:12px;font-weight:500;}
+.settings-row-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.settings-inp{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;outline:none;width:200px;}
+.settings-inp:focus{border-color:var(--accent);}
+.settings-sel{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:6px 10px;outline:none;cursor:pointer;width:200px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ── Nav Rail ── -->
+<nav class="nav-rail">
+  <div class="nav-logo">S</div>
+  <div class="nav-items">
+    <a class="nav-item active" onclick="navigate('ai-creator')" title="AI Creator">
+      <span class="nav-icon">⬡</span>
+      <span class="nav-label">AI Create</span>
+    </a>
+    <a class="nav-item" onclick="navigate('designer')" title="Strategy Designer">
+      <span class="nav-icon">✏</span>
+      <span class="nav-label">Designer</span>
+    </a>
+    <a class="nav-item" onclick="navigate('backtest')" title="Backtest Lab">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Backtest</span>
+    </a>
+    <a class="nav-item" onclick="navigate('registry')" title="Strategy Registry">
+      <span class="nav-icon">🗂</span>
+      <span class="nav-label">Registry</span>
+    </a>
+    <a class="nav-item" onclick="navigate('paper')" title="Paper Trading">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Paper</span>
+      <span class="nav-dot" id="paperDot" style="display:none;"></span>
+    </a>
+  </div>
+  <div class="nav-bottom">
+    <a class="nav-item" onclick="navigate('settings')" title="Settings">
+      <span class="nav-icon">⚙</span>
+      <span class="nav-label">Settings</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <input id="strategyName" class="topbar-name-input" type="text" value="Untitled Strategy" oninput="AppState.strategyName=this.value;saveState();">
+  <div class="topbar-sep"></div>
+  <div class="topbar-status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText" style="font-size:11px;">Not validated</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-btn" onclick="navigate('designer');setTimeout(runValidation,100);">✓ Validate</button>
+    <button class="topbar-btn" id="saveRegistryBtn" onclick="openSaveModal()" style="display:none;">💾 Save</button>
+    <button class="topbar-btn primary" id="runBacktestBtn" onclick="goToBacktest()" disabled>▶ Run Backtest</button>
+  </div>
+</div>
+
+<!-- ── Panels ── -->
+<div class="main">
+
+  <!-- ═══ PANEL: AI CREATOR ═══ -->
+  <div class="panel active" id="panel-ai-creator">
+    <div class="creator-wrap">
+      <div class="creator-hero">
+        <div class="creator-hero-icon">⬡</div>
+        <div class="creator-hero-title">Strategy Creation Agent</div>
+        <div class="creator-hero-sub">
+          Describe your trading idea in plain English.<br>
+          The agent maps it to indicators, builds the DSL, validates it, and explains every choice.
+        </div>
+      </div>
+
+      <div class="creator-card">
+        <textarea id="creatorGoal" class="creator-textarea"
+          placeholder="e.g. I want to buy SPY when momentum is recovering from oversold conditions and the long-term trend is bullish. Exit when overbought or the trend breaks down."></textarea>
+        <div class="creator-row">
+          <select id="creatorTimeframe" class="creator-tf-sel">
+            <option value="1Hour">1 Hour</option>
+            <option value="1Day">1 Day</option>
+            <option value="15Min">15 Min</option>
+          </select>
+          <button class="creator-gen-btn" id="creatorGenBtn" onclick="runCreationAgent()">
+            ✦ Generate Strategy
+          </button>
+        </div>
+        <div class="creator-examples">
+          <span class="creator-ex-label">Try:</span>
+          <button class="ex-pill" onclick="setEx(this)">Momentum breakout when trend is bullish</button>
+          <button class="ex-pill" onclick="setEx(this)">Mean reversion from deeply oversold RSI</button>
+          <button class="ex-pill" onclick="setEx(this)">Buy 52-week high breakout with volume confirmation</button>
+          <button class="ex-pill" onclick="setEx(this)">MACD crossover with SMA trend filter</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="creator-card" id="creatorLoading" style="display:none;">
+        <div class="creator-steps" id="creatorSteps">
+          <div class="cr-step" id="cs1"><div class="cr-step-icon">1</div><span>Parsing trading intent...</span></div>
+          <div class="cr-step" id="cs2"><div class="cr-step-icon">2</div><span>Mapping to indicator library...</span></div>
+          <div class="cr-step" id="cs3"><div class="cr-step-icon">3</div><span>Building strategy DSL...</span></div>
+          <div class="cr-step" id="cs4"><div class="cr-step-icon">4</div><span>Validating and self-correcting...</span></div>
+          <div class="cr-step" id="cs5"><div class="cr-step-icon">5</div><span>Generating explanation...</span></div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="creator-card creator-result" id="creatorResult"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL: STRATEGY DESIGNER ═══ -->
+  <div class="panel" id="panel-designer">
+    <div class="designer-wrap">
+      <div class="designer-main">
+        <div class="designer-panel">
+          <div class="panel-lbl entry">↑ Entry Rules</div>
+          <div class="cond-list" id="entryConditions"></div>
+          <button class="add-cond-btn" onclick="addCondition('entry')">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Add condition
+          </button>
+        </div>
+        <div class="designer-panel">
+          <div class="panel-lbl exit">↓ Exit Rules</div>
+          <div class="cond-list" id="exitConditions"></div>
+          <button class="add-cond-btn" onclick="addCondition('exit')">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Add condition
+          </button>
+        </div>
+      </div>
+
+      <!-- Risk Rules (collapsible) -->
+      <div class="designer-risk">
+        <button class="risk-toggle-btn" onclick="toggleRisk()">
+          <span style="color:var(--amber);">⚡ Risk Rules</span>
+          <span id="riskChevron" style="font-size:10px;">▼</span>
+        </button>
+        <div class="risk-content" id="riskContent">
+          <div class="risk-field">
+            <div class="risk-lbl">Stop Loss</div>
+            <div class="risk-inp-row"><input id="stopLoss" class="risk-num" type="number" value="5" min="0.1" max="50" step="0.5"><span class="risk-unit">%</span></div>
+          </div>
+          <div class="risk-field">
+            <div class="risk-lbl">Take Profit</div>
+            <div class="risk-inp-row"><input id="takeProfit" class="risk-num" type="number" value="15" min="0.1" max="200" step="0.5"><span class="risk-unit">%</span></div>
+          </div>
+          <div class="risk-field">
+            <div class="risk-lbl">Position Size</div>
+            <div class="risk-inp-row"><input id="posSize" class="risk-num" type="number" value="95" min="1" max="100" step="1"><span class="risk-unit">% capital</span></div>
+          </div>
+          <div class="risk-field">
+            <div class="risk-lbl">Max Positions</div>
+            <div class="risk-inp-row"><input id="maxPos" class="risk-num" type="number" value="1" min="1" max="50" step="1"></div>
+          </div>
+        </div>
+        <div id="valBanner" style="display:none;" class="val-banner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL: BACKTEST LAB ═══ -->
+  <div class="panel" id="panel-backtest">
+    <div class="bt-layout">
+      <div class="bt-sidebar">
+        <div class="sec-lbl">Symbol</div>
+        <div class="field">
+          <input id="btSymbol" class="inp" type="text" value="SPY" style="text-transform:uppercase;font-weight:600;font-size:14px;">
+        </div>
+        <div class="sym-pills">
+          <button class="sym-pill" onclick="setSym('SPY')">SPY</button>
+          <button class="sym-pill" onclick="setSym('QQQ')">QQQ</button>
+          <button class="sym-pill" onclick="setSym('AAPL')">AAPL</button>
+          <button class="sym-pill" onclick="setSym('NVDA')">NVDA</button>
+          <button class="sym-pill" onclick="setSym('TSLA')">TSLA</button>
+          <button class="sym-pill" onclick="setSym('MSFT')">MSFT</button>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Date Range</div>
+        <div class="inp-row">
+          <div class="field"><label>Start</label><input id="btStart" class="inp" type="date" value="2024-01-01"></div>
+          <div class="field"><label>End</label><input id="btEnd" class="inp" type="date" value="2026-05-31"></div>
+        </div>
+        <div class="date-pills">
+          <button class="date-pill" onclick="setDates(1)">1Y</button>
+          <button class="date-pill" onclick="setDates(2)">2Y</button>
+          <button class="date-pill" onclick="setDates(3)">3Y</button>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-lbl">Config</div>
+        <div class="inp-row">
+          <div class="field"><label>Capital ($)</label><input id="btCapital" class="inp" type="number" value="10000"></div>
+          <div class="field"><label>Timeframe</label>
+            <select id="btTimeframe" class="sel-inp">
+              <option value="1Hour" selected>1 Hour</option>
+              <option value="1Day">1 Day</option>
+              <option value="15Min">15 Min</option>
+            </select>
+          </div>
+        </div>
+        <div class="inp-row">
+          <div class="field"><label>Sizing</label>
+            <select id="btSizing" class="sel-inp">
+              <option value="fixed" selected>Fixed</option>
+              <option value="compounding">Compounding</option>
+            </select>
+          </div>
+          <div class="field"><label>Commission %</label><input id="btComm" class="inp" type="number" value="0.1" step="0.01"></div>
+        </div>
+        <div style="flex:1;"></div>
+        <button class="run-btn" id="btRunBtn" onclick="runBacktest()">▶ Run Backtest</button>
+      </div>
+
+      <div class="bt-main" id="btMain">
+        <div class="bt-empty" id="btEmpty">
+          <div class="bt-empty-icon">⬡</div>
+          <div class="bt-empty-title">No backtest run yet</div>
+          <div class="bt-empty-sub">Configure symbol and dates on the left, then click Run Backtest.</div>
+        </div>
+        <div id="btLoading" style="display:none;" class="bt-loading">
+          <div class="spin"></div>
+          <div style="color:var(--text2);font-size:13px;" id="btLoadingText">Fetching price data...</div>
+        </div>
+        <div id="btResults" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL: REGISTRY ═══ -->
+  <div class="panel" id="panel-registry">
+    <div class="registry-wrap">
+      <div class="registry-header">
+        <div class="registry-title">Strategy Registry</div>
+        <div class="registry-filters">
+          <select class="filter-sel" id="regFilter" onchange="loadRegistry()">
+            <option value="">All statuses</option>
+            <option value="draft">Draft</option>
+            <option value="backtested">Backtested</option>
+            <option value="approved">Approved</option>
+            <option value="paper_trading">Paper Trading</option>
+          </select>
+        </div>
+      </div>
+      <div class="registry-table-wrap">
+        <div class="registry-row registry-head">
+          <div>Strategy</div><div>Symbol</div><div>Status</div>
+          <div>Sharpe</div><div>Return</div><div>Created</div><div>Actions</div>
+        </div>
+        <div id="registryRows"><div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL: PAPER TRADING ═══ -->
+  <div class="panel" id="panel-paper">
+    <div class="paper-wrap">
+      <div class="paper-header">
+        <div class="paper-title">Paper Trading</div>
+        <button class="topbar-btn" onclick="loadPaperSummary()">↺ Refresh</button>
+      </div>
+      <div id="paperContent"><div style="color:var(--text3);font-size:12px;">Loading deployments...</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PANEL: SETTINGS ═══ -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-wrap">
+      <div class="settings-title">Settings</div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">AI Review</div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">Auto AI Review after backtest</div>
+            <div class="settings-row-sub">Automatically analyse results with Claude after each backtest</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="aiReviewToggle" checked onchange="saveSettings()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">LLM Provider</div>
+            <div class="settings-row-sub">Provider for AI Review and Strategy Creation</div>
+          </div>
+          <select class="settings-sel" id="settingsProvider" onchange="onSettingsProviderChange();saveSettings();">
+            <option value="anthropic">Anthropic Claude</option>
+            <option value="openai">OpenAI</option>
+            <option value="openrouter">OpenRouter</option>
+            <option value="groq">Groq</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">Model</div>
+            <div class="settings-row-sub">Model name for the selected provider</div>
+          </div>
+          <input class="settings-inp" id="settingsModel" value="claude-sonnet-4-6" onchange="saveSettings();">
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Backend</div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">Backend URL</div>
+            <div class="settings-row-sub">FastAPI server address</div>
+          </div>
+          <input class="settings-inp" id="settingsBackend" value="http://localhost:8000" onchange="saveSettings();">
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Strategy Builder</div>
+        <div class="settings-row">
+          <div class="settings-row-left">
+            <div class="settings-row-label">Default Position Size</div>
+            <div class="settings-row-sub">% of capital per trade for new strategies</div>
+          </div>
+          <input class="settings-inp" id="settingsPosSz" type="number" value="95" min="1" max="100" onchange="saveSettings();">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<!-- Save to Registry Modal -->
+<div id="saveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:center;justify-content:center;" onclick="if(event.target===this)closeSaveModal()">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:460px;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:600;">Save to Registry</span>
+      <button onclick="closeSaveModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;">×</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:12px;color:var(--text2);">Saving <span style="color:var(--accent);font-weight:600;" id="saveModalName"></span> as <span style="color:var(--amber);font-weight:600;">draft</span> to Neon registry.</div>
+      <div class="field"><label>Notes (optional)</label><textarea id="saveModalNotes" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:10px;width:100%;min-height:70px;resize:vertical;outline:none;" placeholder="Strategy notes..."></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="closeSaveModal()" class="topbar-btn">Cancel</button>
+        <button id="confirmSaveBtn" onclick="confirmSave()" class="topbar-btn primary">Save to Registry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = () => document.getElementById('settingsBackend')?.value || 'http://localhost:8000';
+
+// ─── App State ────────────────────────────────────────────────────────────────
+const AppState = {
+  strategyName: 'Untitled Strategy',
+  entry: [
+    {id:'e1',left:{type:'SMA',params:{period:20,source:'close'}},operator:'cross_above',rhs:{type:'indicator',data:{type:'SMA',params:{period:50,source:'close'}}},logic:'AND'},
+    {id:'e2',left:{type:'RSI',params:{period:14,source:'close'}},operator:'<',rhs:{type:'scalar',value:60},logic:'AND'},
+  ],
+  exit: [
+    {id:'x1',left:{type:'RSI',params:{period:14,source:'close'}},operator:'>',rhs:{type:'scalar',value:70},logic:'OR'},
+  ],
+  condErrors: {},
+  validated: false,
+  valid: false,
+  registryId: null,
+  lastBacktest: null,
+  activePanel: 'ai-creator',
+};
+
+// ─── Indicator spec ───────────────────────────────────────────────────────────
+const INDS = {
+  SMA:{label:'SMA',group:'Trend',outputType:'line',params:{period:{type:'int',default:20,min:2,max:500},source:{type:'enum',options:['open','high','low','close'],default:'close'}},validOps:['>','<','>=','<=','==','cross_above','cross_below'],validRhs:['line','scalar','level']},
+  EMA:{label:'EMA',group:'Trend',outputType:'line',params:{period:{type:'int',default:20,min:2,max:500},source:{type:'enum',options:['open','high','low','close'],default:'close'}},validOps:['>','<','>=','<=','==','cross_above','cross_below'],validRhs:['line','scalar','level']},
+  RSI:{label:'RSI',group:'Momentum',outputType:'line',params:{period:{type:'int',default:14,min:2,max:100},source:{type:'enum',options:['open','high','low','close'],default:'close'}},validOps:['>','<','>=','<=','==','cross_above','cross_below'],validRhs:['scalar'],rhsConstraints:{min:0,max:100}},
+  MACD:{label:'MACD',group:'Momentum',outputType:'composite',params:{fast:{type:'int',default:12,min:2,max:100},slow:{type:'int',default:26,min:2,max:200},signal:{type:'int',default:9,min:2,max:50}},components:{macd_line:{label:'MACD Line',outputType:'crossable_line'},signal_line:{label:'Signal Line',outputType:'crossable_line'},histogram:{label:'Histogram',outputType:'histogram'}},defaultComponent:'macd_line',validOps:{macd_line:['>','<','cross_above','cross_below'],signal_line:['>','<','cross_above','cross_below'],histogram:['>','<','>=','<=']}},
+  ATR:{label:'ATR',group:'Volatility',outputType:'line',params:{period:{type:'int',default:14,min:2,max:100}},validOps:['>','<','>=','<='],validRhs:['scalar','line']},
+  PRICE:{label:'Price',group:'Price & Volume',outputType:'scalar',params:{source:{type:'enum',options:['open','high','low','close'],default:'close'}},validOps:['>','<','>=','<=','==','cross_above','cross_below'],validRhs:['scalar','line','level']},
+  VOLUME:{label:'Volume',group:'Price & Volume',outputType:'scalar',params:{},validOps:['>','<','>=','<='],validRhs:['scalar']},
+  WEEK52_HIGH:{label:'52W High',group:'Price & Volume',outputType:'level',params:{},validOps:['>','<','>=','<='],validRhs:['scalar','line']},
+  WEEK52_LOW:{label:'52W Low',group:'Price & Volume',outputType:'level',params:{},validOps:['>','<','>=','<='],validRhs:['scalar','line']},
+};
+const OPS = {'>':'above','<':'below','>=':'≥','<=':'≤','==':'equals','cross_above':'crosses above','cross_below':'crosses below'};
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+function navigate(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => { if (n.getAttribute('onclick')?.includes(id)) n.classList.add('active'); });
+  AppState.activePanel = id;
+  if (id === 'registry') loadRegistry();
+  if (id === 'paper')    loadPaperSummary();
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+function saveSettings() {
+  const s = {
+    aiReview: document.getElementById('aiReviewToggle').checked,
+    provider: document.getElementById('settingsProvider').value,
+    model:    document.getElementById('settingsModel').value,
+    backend:  document.getElementById('settingsBackend').value,
+    posSz:    document.getElementById('settingsPosSz').value,
+  };
+  localStorage.setItem('app_settings', JSON.stringify(s));
+}
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('app_settings') || '{}');
+    if (s.aiReview !== undefined) document.getElementById('aiReviewToggle').checked = s.aiReview;
+    if (s.provider) document.getElementById('settingsProvider').value = s.provider;
+    if (s.model)    document.getElementById('settingsModel').value    = s.model;
+    if (s.backend)  document.getElementById('settingsBackend').value  = s.backend;
+    if (s.posSz)    document.getElementById('settingsPosSz').value    = s.posSz;
+  } catch(e){}
+}
+const MODELS = {anthropic:'claude-sonnet-4-6',openai:'gpt-4o',openrouter:'anthropic/claude-sonnet-4-6',groq:'llama-3.3-70b-versatile'};
+function onSettingsProviderChange() {
+  const p = document.getElementById('settingsProvider').value;
+  document.getElementById('settingsModel').value = MODELS[p] || '';
+}
+function getSettings() {
+  return {
+    aiReview: document.getElementById('aiReviewToggle').checked,
+    provider: document.getElementById('settingsProvider').value,
+    model:    document.getElementById('settingsModel').value,
+    backend:  document.getElementById('settingsBackend').value,
+  };
+}
+
+// ─── State persistence ────────────────────────────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem('app_state', JSON.stringify({
+      strategyName: AppState.strategyName,
+      entry: AppState.entry,
+      exit:  AppState.exit,
+      sl: document.getElementById('stopLoss')?.value,
+      tp: document.getElementById('takeProfit')?.value,
+      ps: document.getElementById('posSize')?.value,
+      mp: document.getElementById('maxPos')?.value,
+    }));
+  } catch(e){}
+}
+function loadAppState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('app_state') || '{}');
+    if (s.strategyName) { AppState.strategyName = s.strategyName; document.getElementById('strategyName').value = s.strategyName; }
+    if (s.entry?.length) AppState.entry = s.entry;
+    if (s.exit?.length)  AppState.exit  = s.exit;
+    if (s.sl) document.getElementById('stopLoss').value   = s.sl;
+    if (s.tp) document.getElementById('takeProfit').value = s.tp;
+    if (s.ps) document.getElementById('posSize').value    = s.ps;
+    if (s.mp) document.getElementById('maxPos').value     = s.mp;
+  } catch(e){}
+}
+
+// ─── Risk toggle ──────────────────────────────────────────────────────────────
+function toggleRisk() {
+  const c = document.getElementById('riskContent');
+  const open = c.classList.toggle('open');
+  document.getElementById('riskChevron').textContent = open ? '▲' : '▼';
+}
+
+// ─── Status ───────────────────────────────────────────────────────────────────
+function updateStatus() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  const btn = document.getElementById('runBacktestBtn');
+  const savBtn = document.getElementById('saveRegistryBtn');
+  if (!AppState.validated) {
+    dot.className='status-dot'; txt.textContent='Not validated';
+    btn.disabled=true; savBtn.style.display='none';
+  } else if (!AppState.valid) {
+    dot.className='status-dot error'; txt.textContent='Validation failed';
+    btn.disabled=true; savBtn.style.display='none';
+  } else {
+    dot.className='status-dot valid'; txt.textContent='Valid · Ready';
+    btn.disabled=false; savBtn.style.display='flex';
+  }
+  saveState();
+}
+
+// ─── Build strategy JSON ──────────────────────────────────────────────────────
+function buildStrategyJSON() {
+  const indicators={}, conditions={};
+  function procInd(idata,prefix) {
+    if (!idata?.type) return null;
+    const key=(prefix+'_'+idata.type+(idata.params?.period||'')+(idata.component||'')).toLowerCase().replace(/[^a-z0-9]/g,'_');
+    if (!indicators[key]) {
+      indicators[key]={type:idata.type,params:{...(idata.params||{})}};
+      if (idata.component) indicators[key].component=idata.component;
+    }
+    return key;
+  }
+  [...AppState.entry,...AppState.exit].forEach(cond=>{
+    const lk=procInd(cond.left,'left');
+    let rv;
+    if (cond.rhs.type==='scalar') rv={type:'scalar',value:cond.rhs.value};
+    else { const rk=procInd(cond.rhs.data,'right'); rv={type:'indicator',ref:rk}; }
+    conditions[cond.id]={left:lk,operator:cond.operator,right:rv};
+  });
+  const gl=(items)=>({logic:items[1]?.logic||'AND',conditions:items.map(c=>c.id)});
+  return {
+    schema_version:'1.0',
+    strategy_name: document.getElementById('strategyName').value||'Unnamed',
+    indicators, conditions,
+    entry_rules: gl(AppState.entry),
+    exit_rules:  gl(AppState.exit),
+    risk_rules:{
+      stop_loss:    {type:'percent',value:parseFloat(document.getElementById('stopLoss').value)},
+      take_profit:  {type:'percent',value:parseFloat(document.getElementById('takeProfit').value)},
+      position_size:{type:'percent_of_capital',value:parseFloat(document.getElementById('posSize').value)},
+      max_open_positions:parseInt(document.getElementById('maxPos').value),
+    },
+  };
+}
+
+// ─── Validation ───────────────────────────────────────────────────────────────
+async function runValidation() {
+  const payload = buildStrategyJSON();
+  try {
+    const res  = await fetch(`${API()}/api/validate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data = await res.json();
+    AppState.validated = true;
+    AppState.valid = data.valid;
+    AppState.condErrors = {};
+    [...(data.errors||[]),...(data.warnings||[])].forEach(issue=>{
+      (issue.condition_ids||[]).forEach(cid=>{
+        if (!AppState.condErrors[cid]) AppState.condErrors[cid]=[];
+        AppState.condErrors[cid].push(issue);
+      });
+    });
+    const banner = document.getElementById('valBanner');
+    if (data.errors?.length) {
+      banner.style.display='flex'; banner.className='val-banner err';
+      banner.textContent=`✕ ${data.errors.length} error${data.errors.length>1?'s':''} found`;
+    } else if (data.warnings?.length) {
+      banner.style.display='flex'; banner.className='val-banner warn';
+      banner.textContent=`◈ ${data.warnings.length} warning${data.warnings.length>1?'s':''}`;
+    } else {
+      banner.style.display='flex'; banner.className='val-banner ok';
+      banner.textContent='✓ Strategy valid — ready to backtest';
+    }
+    updateStatus(); render();
+  } catch(e) { console.error('Validation error',e); }
+}
+
+// ─── Designer render ──────────────────────────────────────────────────────────
+function render() {
+  renderSection('entry', document.getElementById('entryConditions'));
+  renderSection('exit',  document.getElementById('exitConditions'));
+}
+function renderSection(section, container) {
+  container.innerHTML='';
+  AppState[section].forEach((cond,idx)=>{
+    if (idx>0) {
+      const conn=document.createElement('div'); conn.className='logic-conn';
+      const btn=document.createElement('button'); btn.className='logic-btn active'; btn.textContent=cond.logic;
+      btn.onclick=()=>{cond.logic=cond.logic==='AND'?'OR':'AND';render();};
+      conn.appendChild(btn); container.appendChild(conn);
+    }
+    container.appendChild(buildCondRow(section,cond,idx));
+  });
+}
+function buildCondRow(section,cond,idx) {
+  const errs=AppState.condErrors[cond.id]||[];
+  const hasErr=errs.some(e=>e.severity==='error');
+  const row=document.createElement('div');
+  row.className='cond-row'+(hasErr?' has-error':AppState.validated?' is-valid':'');
+  const rm=document.createElement('button'); rm.className='cond-remove'; rm.innerHTML='×';
+  rm.onclick=()=>{AppState[section].splice(idx,1);AppState.validated=false;updateStatus();render();};
+  row.appendChild(rm);
+  const lDiv=document.createElement('div'); lDiv.className='ind-side'; lDiv.appendChild(buildIndSide(section,cond,'left')); row.appendChild(lDiv);
+  const opDiv=document.createElement('div'); opDiv.className='op-col';
+  const spec=INDS[cond.left.type]; let validOps=spec.validOps;
+  if (spec.outputType==='composite'&&cond.left.component) validOps=spec.validOps[cond.left.component]||[];
+  const opSel=document.createElement('select'); opSel.className='sel op-sel';
+  validOps.forEach(op=>{const o=document.createElement('option');o.value=op;o.textContent=OPS[op]||op;if(op===cond.operator)o.selected=true;opSel.appendChild(o);});
+  opSel.onchange=()=>{cond.operator=opSel.value;AppState.validated=false;updateStatus();render();};
+  opDiv.appendChild(opSel);
+  const tgl=document.createElement('div'); tgl.className='rhs-toggle';
+  ['Value','Indicator'].forEach((t,i)=>{
+    const b=document.createElement('button'); b.className='rhs-tab'+((!i&&cond.rhs.type==='scalar')||(i&&cond.rhs.type==='indicator')?' active':''); b.textContent=t;
+    b.onclick=()=>{cond.rhs=i?{type:'indicator',data:{type:'SMA',params:{period:50,source:'close'}}}:{type:'scalar',value:0};AppState.validated=false;updateStatus();render();};
+    tgl.appendChild(b);
+  });
+  opDiv.appendChild(tgl); row.appendChild(opDiv);
+  const rDiv=document.createElement('div'); rDiv.className='ind-side';
+  if (cond.rhs.type==='scalar') rDiv.appendChild(buildScalarRhs(cond,spec));
+  else rDiv.appendChild(buildIndSide(section,cond,'right'));
+  row.appendChild(rDiv);
+  if (errs.length) {
+    const ed=document.createElement('div'); ed.style.cssText='grid-column:1/-1;';
+    errs.forEach(e=>{const m=document.createElement('div');m.className='inline-error';m.innerHTML='⚠ '+e.message;ed.appendChild(m);});
+    row.appendChild(ed);
+  }
+  return row;
+}
+function buildScalarRhs(cond,spec) {
+  const w=document.createElement('div'); w.style.cssText='display:flex;flex-direction:column;gap:4px;';
+  const inp=document.createElement('input'); inp.type='number'; inp.className='num-inp'; inp.style.width='76px';
+  inp.value=cond.rhs.value??0;
+  if(spec.rhsConstraints){inp.min=spec.rhsConstraints.min;inp.max=spec.rhsConstraints.max;}
+  inp.onchange=()=>{cond.rhs.value=parseFloat(inp.value);AppState.validated=false;updateStatus();};
+  w.appendChild(inp);
+  if(spec.rhsConstraints){const h=document.createElement('div');h.className='range-hint';h.textContent=`${spec.rhsConstraints.min}–${spec.rhsConstraints.max}`;w.appendChild(h);}
+  return w;
+}
+function buildIndSide(section,cond,side) {
+  const idata=side==='left'?cond.left:(cond.rhs.data||{type:'SMA',params:{period:50,source:'close'}});
+  const wrap=document.createElement('div'); wrap.className='ind-side';
+  const tr=document.createElement('div'); tr.className='ind-type-row';
+  const ts=document.createElement('select'); ts.className='sel ind-sel';
+  const groups={};
+  Object.entries(INDS).forEach(([k,v])=>{if(!groups[v.group])groups[v.group]=[];groups[v.group].push([k,v]);});
+  Object.entries(groups).forEach(([g,items])=>{
+    const og=document.createElement('optgroup'); og.label=g;
+    items.forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.label;if(k===idata.type)o.selected=true;og.appendChild(o);});
+    ts.appendChild(og);
+  });
+  ts.onchange=()=>{
+    const nt=ts.value,ns=INDS[nt],np={};
+    Object.entries(ns.params).forEach(([k,v])=>{np[k]=v.default;});
+    if(side==='left'){cond.left={type:nt,params:np};if(ns.outputType==='composite')cond.left.component=ns.defaultComponent;const ops=ns.outputType==='composite'?ns.validOps[cond.left.component]:ns.validOps;cond.operator=ops[0];}
+    else{cond.rhs.data={type:nt,params:np};if(ns.outputType==='composite')cond.rhs.data.component=ns.defaultComponent;}
+    AppState.validated=false;updateStatus();render();
+  };
+  tr.appendChild(ts);
+  const spec=INDS[idata.type];
+  if(spec.outputType==='composite'){
+    const cs=document.createElement('select');cs.className='sel';
+    Object.entries(spec.components).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.label;if(k===idata.component)o.selected=true;cs.appendChild(o);});
+    cs.onchange=()=>{if(side==='left'){cond.left.component=cs.value;const ops=spec.validOps[cs.value]||[];if(!ops.includes(cond.operator))cond.operator=ops[0];}else{cond.rhs.data.component=cs.value;}AppState.validated=false;updateStatus();render();};
+    tr.appendChild(cs);
+  }
+  wrap.appendChild(tr);
+  if(Object.keys(spec.params).length>0){
+    const pr=document.createElement('div');pr.className='param-row';
+    Object.entries(spec.params).forEach(([pn,ps])=>{
+      if(ps.type==='int'){
+        const pg=document.createElement('div');pg.className='param-grp';
+        const lb=document.createElement('span');lb.className='param-lbl';lb.textContent=pn==='period'?'per':pn==='fast'?'f':pn==='slow'?'s':pn==='signal'?'sig':pn;
+        const ip=document.createElement('input');ip.type='number';ip.className='num-inp';ip.value=idata.params?.[pn]??ps.default??'';ip.min=ps.min;ip.max=ps.max;
+        ip.onchange=()=>{const t=side==='left'?cond.left:cond.rhs.data;if(!t.params)t.params={};t.params[pn]=parseInt(ip.value);AppState.validated=false;updateStatus();};
+        pg.appendChild(lb);pg.appendChild(ip);pr.appendChild(pg);
+      } else if(ps.type==='enum'&&pn==='source'){
+        const pills=document.createElement('div');pills.className='src-pills';
+        ps.options.forEach(opt=>{
+          const p=document.createElement('button');p.className='src-pill'+(idata.params?.[pn]===opt?' active':'');
+          p.textContent=opt[0].toUpperCase();p.title=opt;
+          p.onclick=()=>{const t=side==='left'?cond.left:cond.rhs.data;if(!t.params)t.params={};t.params[pn]=opt;AppState.validated=false;updateStatus();render();};
+          pills.appendChild(p);
+        });
+        pr.appendChild(pills);
+      }
+    });
+    wrap.appendChild(pr);
+  }
+  return wrap;
+}
+function addCondition(section) {
+  const id=section[0]+Date.now();
+  AppState[section].push({id,left:{type:'RSI',params:{period:14,source:'close'}},operator:'<',rhs:{type:'scalar',value:40},logic:'AND'});
+  AppState.validated=false;updateStatus();render();
+}
+
+// ─── AI Creator ───────────────────────────────────────────────────────────────
+function setEx(btn) { document.getElementById('creatorGoal').value=btn.textContent; }
+
+async function runCreationAgent() {
+  const goal=document.getElementById('creatorGoal').value.trim();
+  if (!goal) return;
+  const tf=document.getElementById('creatorTimeframe').value;
+  const btn=document.getElementById('creatorGenBtn');
+  btn.disabled=true;
+  document.getElementById('creatorLoading').style.display='block';
+  document.getElementById('creatorResult').className='creator-card creator-result';
+  const steps=['cs1','cs2','cs3','cs4','cs5'];
+  let si=0;
+  const timer=setInterval(()=>{
+    if(si>0){const p=document.getElementById(steps[si-1]);if(p){p.classList.remove('active');p.classList.add('done');p.querySelector('.cr-step-icon').textContent='✓';}}
+    if(si<steps.length){const c=document.getElementById(steps[si]);if(c)c.classList.add('active');}
+    si++;
+  },2800);
+  try {
+    const {provider,model}=getSettings();
+    const res=await fetch(`${API()}/api/agent/create-strategy`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({goal,timeframe:tf,provider,model,source:'human'})});
+    clearInterval(timer);
+    const data=await res.json();
+    document.getElementById('creatorLoading').style.display='none';
+    if (!res.ok) { showCreatorError(data?.detail?.error||`HTTP ${res.status}`); }
+    else { window._agentStrategy=data.strategy_json; renderCreatorResult(data); }
+  } catch(e) {
+    clearInterval(timer);
+    document.getElementById('creatorLoading').style.display='none';
+    showCreatorError('Could not reach backend at '+API());
+  }
+  btn.disabled=false;
+}
+
+function showCreatorError(msg) {
+  const el=document.getElementById('creatorResult');
+  el.className='creator-card creator-result show';
+  el.innerHTML=`<div style="color:var(--red);font-size:12px;display:flex;gap:8px;"><span>⚠</span><div><div style="font-weight:600;margin-bottom:4px;">Generation failed</div><div style="color:var(--text3);">${msg}</div></div></div>`;
+}
+
+function renderCreatorResult(data) {
+  const el=document.getElementById('creatorResult');
+  el.className='creator-card creator-result show';
+  const ex=data.explanation||{}, dsl=data.strategy_json||{};
+  const gaps=data.library_gaps||[], sugg=ex.improvement_suggestions||[];
+  const entryIds=dsl.entry_rules?.conditions||[], exitIds=dsl.exit_rules?.conditions||[];
+  const conds=dsl.conditions||{}, inds=dsl.indicators||{};
+  const entryExpl=ex.entry_explanation||[], exitExpl=ex.exit_explanation||[];
+
+  el.innerHTML=`
+    <div class="result-header">
+      <div>
+        <div class="result-name">✓ ${dsl.strategy_name||'Generated Strategy'}</div>
+        <div class="result-meta">${data.attempts||1} validation cycle · ${entryIds.length} entry + ${exitIds.length} exit conditions${ex.estimated_signal_frequency?' · '+ex.estimated_signal_frequency:''}</div>
+      </div>
+      <div class="result-actions">
+        <button class="result-btn reject" onclick="rejectCreator()">Reject</button>
+        <button class="result-btn load" onclick="loadCreatorStrategy()">Load into Designer →</button>
+      </div>
+    </div>
+    ${ex.summary?`<div class="result-summary">${ex.summary}</div>`:''}
+    <div class="result-cond-grid">
+      <div class="result-cond-box">
+        <div class="result-cond-lbl entry">↑ Entry (${dsl.entry_rules?.logic||'AND'})</div>
+        ${entryIds.map(id=>{const e=entryExpl.find(x=>x.condition_id===id);return`<div class="result-cond-item">${e?e.plain_english:id}</div>`;}).join('')}
+      </div>
+      <div class="result-cond-box">
+        <div class="result-cond-lbl exit">↓ Exit (${dsl.exit_rules?.logic||'OR'})</div>
+        ${exitIds.map(id=>{const e=exitExpl.find(x=>x.condition_id===id);return`<div class="result-cond-item">${e?e.plain_english:id}</div>`;}).join('')}
+      </div>
+    </div>
+    ${gaps.filter(g=>g.proxy_used).map(g=>`<div class="gap-warn"><span style="flex-shrink:0;">⚠</span><div><strong>${g.concept}</strong> — not directly available. Proxy: ${g.proxy_used}${g.limitation?`<div style="margin-top:2px;opacity:.7;">${g.limitation}</div>`:''}</div></div>`).join('')}
+    ${sugg.length?`<div class="sugg-list">${sugg.map((s,i)=>`<div class="sugg-item"><span style="color:var(--accent);font-weight:700;">${i+1}.</span><span>${s}</span></div>`).join('')}</div>`:''}
+  `;
+}
+
+function loadCreatorStrategy() {
+  const s=window._agentStrategy; if(!s) return;
+  const conds=s.conditions||{},inds=s.indicators||{};
+  const entryIds=s.entry_rules?.conditions||[], exitIds=s.exit_rules?.conditions||[];
+  function buildCond(id,logic) {
+    const c=conds[id]; if(!c) return null;
+    const lInd=inds[c.left]||{};
+    const left={type:lInd.type||'RSI',params:lInd.params||{},component:lInd.component};
+    const rhs=c.right?.type==='scalar'?{type:'scalar',value:c.right.value}:{type:'indicator',data:{type:(inds[c.right?.ref]||{}).type||'SMA',params:(inds[c.right?.ref]||{}).params||{},component:(inds[c.right?.ref]||{}).component}};
+    return {id:id+'_'+Date.now(),left,operator:c.operator,rhs,logic};
+  }
+  AppState.entry=entryIds.map((id,i)=>buildCond(id,i===0?'AND':(s.entry_rules?.logic||'AND'))).filter(Boolean);
+  AppState.exit =exitIds.map((id,i)=>buildCond(id,i===0?'OR':(s.exit_rules?.logic||'OR'))).filter(Boolean);
+  if (s.strategy_name) { AppState.strategyName=s.strategy_name; document.getElementById('strategyName').value=s.strategy_name; }
+  const rr=s.risk_rules||{};
+  if (rr.stop_loss?.value)    document.getElementById('stopLoss').value   = rr.stop_loss.value;
+  if (rr.take_profit?.value)  document.getElementById('takeProfit').value = rr.take_profit.value;
+  if (rr.position_size?.value)document.getElementById('posSize').value    = rr.position_size.value;
+  AppState.validated=false; updateStatus(); render(); saveState();
+  navigate('designer');
+}
+
+function rejectCreator() {
+  window._agentStrategy=null;
+  document.getElementById('creatorResult').className='creator-card creator-result';
+  document.getElementById('creatorGoal').value='';
+}
+
+// ─── Go to Backtest ───────────────────────────────────────────────────────────
+function goToBacktest() { navigate('backtest'); }
+
+// ─── Backtest ─────────────────────────────────────────────────────────────────
+function setSym(s) {
+  document.getElementById('btSymbol').value=s;
+  document.querySelectorAll('.sym-pill').forEach(p=>p.classList.toggle('active',p.textContent===s));
+}
+function setDates(y) {
+  const e=new Date(),s=new Date(); s.setFullYear(e.getFullYear()-y);
+  document.getElementById('btEnd').value=e.toISOString().split('T')[0];
+  document.getElementById('btStart').value=s.toISOString().split('T')[0];
+}
+
+let equityChart=null, ddChart=null;
+
+async function runBacktest() {
+  const strategy=buildStrategyJSON();
+  const symbol=document.getElementById('btSymbol').value.toUpperCase().trim();
+  const start=document.getElementById('btStart').value;
+  const end=document.getElementById('btEnd').value;
+  const capital=parseFloat(document.getElementById('btCapital').value);
+  const tf=document.getElementById('btTimeframe').value;
+  const sizing=document.getElementById('btSizing').value;
+  const comm=parseFloat(document.getElementById('btComm').value);
+  const stratId=AppState.registryId;
+  const endpoint=stratId?`${API()}/api/registry/backtest`:`${API()}/api/backtest`;
+  const payload=stratId
+    ?{strategy_id:stratId,strategy,symbol,start_date:start,end_date:end,initial_capital:capital,commission_pct:comm,slippage_pct:0.05,timeframe:tf,position_sizing:sizing}
+    :{strategy,symbol,start_date:start,end_date:end,initial_capital:capital,commission_pct:comm,slippage_pct:0.05,timeframe:tf,position_sizing:sizing};
+
+  document.getElementById('btEmpty').style.display='none';
+  document.getElementById('btResults').style.display='none';
+  document.getElementById('btLoading').style.display='flex';
+
+  const msgs=['Fetching price data...','Computing indicators...','Running bar-by-bar simulation...','Calculating metrics...'];
+  let mi=0; const mt=setInterval(()=>{ if(mi<msgs.length){document.getElementById('btLoadingText').textContent=msgs[mi++];}},1800);
+
+  try {
+    const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    clearInterval(mt);
+    const data=await res.json();
+    document.getElementById('btLoading').style.display='none';
+    if (!res.ok) { document.getElementById('btEmpty').style.display='flex'; alert('Backtest failed: '+(data.detail||'Unknown error')); return; }
+    if (!data.success) { document.getElementById('btEmpty').style.display='flex'; alert('Backtest failed: '+data.error); return; }
+    AppState.lastBacktest=data;
+    renderBacktestResults(data);
+  } catch(e) {
+    clearInterval(mt);
+    document.getElementById('btLoading').style.display='none';
+    document.getElementById('btEmpty').style.display='flex';
+    alert('Could not reach backend. Make sure uvicorn is running.');
+  }
+}
+
+function fmt(v,u,d){const s=Math.abs(v).toFixed(d);return(v>=0?'+':'-')+s+u;}
+
+function renderBacktestResults(d) {
+  const m=d.metrics||{}, res=document.getElementById('btResults');
+  res.style.display='block';
+  const isPos=d.final_capital>=d.initial_capital;
+  const pfColor=!m.profit_factor?'neu':m.profit_factor>=1.5?'pos':m.profit_factor>=1?'neu':'neg';
+  const cards=[
+    {label:'Total Return',    value:fmt(m.total_return_pct,'%',2),  color:m.total_return_pct>=0?'pos':'neg', sub:`$${d.initial_capital.toLocaleString()} → $${d.final_capital.toLocaleString()}`},
+    {label:'CAGR',            value:fmt(m.cagr_pct,'%',2),          color:m.cagr_pct>=0?'pos':'neg',          sub:'Annualised'},
+    {label:'Sharpe',          value:m.sharpe_ratio?.toFixed(2),     color:m.sharpe_ratio>=1?'pos':m.sharpe_ratio>=0?'neu':'neg', sub:'>1.0 is good'},
+    {label:'Sortino',         value:m.sortino_ratio?.toFixed(2),    color:m.sortino_ratio>=1?'pos':'neu',     sub:'Downside-adjusted'},
+    {label:'Max Drawdown',    value:fmt(m.max_drawdown_pct,'%',2),  color:'neg',                              sub:'Peak to trough'},
+    {label:'Win Rate',        value:fmt(m.win_rate_pct,'%',1),      color:m.win_rate_pct>=50?'pos':'neu',    sub:`${Math.round(m.total_trades*m.win_rate_pct/100)} of ${m.total_trades} trades`},
+    {label:'Profit Factor',   value:m.profit_factor?m.profit_factor.toFixed(2):'—', color:pfColor,           sub:'Gross profit / loss'},
+    {label:'Avg Hold',        value:(m.avg_holding_hours||0).toFixed(1)+'h', color:'neu',                    sub:`~${((m.avg_holding_hours||0)/6.5).toFixed(1)} days`},
+  ];
+  const aiEnabled=document.getElementById('aiReviewToggle').checked;
+  res.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <div style="font-size:15px;font-weight:700;">${d.strategy_name} — ${d.symbol}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;font-family:var(--mono);">${d.start_date} → ${d.end_date} · ${d.total_bars?.toLocaleString()} bars · ${d.timeframe} · ${d.data_source||''}</div>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;background:${isPos?'rgba(62,207,142,.1)':'rgba(240,96,96,.1)'};color:${isPos?'var(--green)':'var(--red)'};">${isPos?'▲':'▼'} ${m.total_return_pct?.toFixed(2)}%</span>
+    </div>
+    <div class="metrics-grid">${cards.map(c=>`<div class="metric-card"><div class="m-lbl">${c.label.toUpperCase()}</div><div class="m-val ${c.color}">${c.value}</div><div class="m-sub">${c.sub}</div></div>`).join('')}</div>
+    <div class="charts-grid">
+      <div class="chart-card full"><div class="chart-title">EQUITY CURVE</div><div class="chart-wrap"><canvas id="eqChart"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">DRAWDOWN</div><div class="chart-wrap"><canvas id="ddChartCanvas"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">EXIT BREAKDOWN</div><div id="exitBd" style="padding-top:8px;"></div></div>
+    </div>
+
+    <!-- AI Review -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;">
+      <div class="ai-review-header">
+        <div class="ai-review-title">
+          <span style="color:var(--purple);">⬡</span> AI Strategy Review
+          <span class="ai-badge">✦ Claude</span>
+        </div>
+        <div class="toggle-wrap">
+          <span class="toggle-label">AI Review</span>
+          <label class="toggle" title="Toggle in Settings">
+            <input type="checkbox" ${aiEnabled?'checked':''} onchange="document.getElementById('aiReviewToggle').checked=this.checked;saveSettings();if(this.checked)runAIReview(AppState.lastBacktest);">
+            <span class="toggle-slider"></span>
+          </label>
+          <button onclick="runAIReview(AppState.lastBacktest)" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid rgba(199,146,234,.3);background:rgba(199,146,234,.1);color:var(--purple);cursor:pointer;margin-left:4px;">↻</button>
+        </div>
+      </div>
+      <div class="ai-panel-body" id="aiBody">
+        ${aiEnabled
+          ?`<div class="ai-loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="margin-left:4px;">Analysing...</span></div>`
+          :`<div style="color:var(--text3);font-size:12px;">AI Review is off — toggle to enable.</div>`}
+      </div>
+    </div>
+
+    <!-- Approve -->
+    <div id="approveSection"></div>
+
+    <!-- Trade log -->
+    <div style="margin-bottom:10px;"><div class="sec-lbl">Trade Log</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Entry</th><th>Exit</th><th>Entry $</th><th>Exit $</th><th>Shares</th><th>P&L $</th><th>P&L %</th><th>Bars</th><th>Reason</th></tr></thead>
+        <tbody id="tradeBody"></tbody>
+      </table>
+    </div>
+  `;
+
+  renderCharts(d); renderExitBd(d.exit_reason_breakdown, m.total_trades); renderTrades(d.trade_log);
+  if (d.run_id) showApproveBar(d.run_id);
+  if (aiEnabled) runAIReview(d);
+}
+
+function renderCharts(d) {
+  const eqData=d.equity_curve||[], ddData=d.drawdown_curve||[];
+  const isPos=(eqData[eqData.length-1]?.equity||0)>=d.initial_capital;
+  const col=isPos?'#3ecf8e':'#f06060';
+  if(equityChart){equityChart.destroy();equityChart=null;}
+  if(ddChart){ddChart.destroy();ddChart=null;}
+  const cOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1e28',borderColor:'#2a2f3d',borderWidth:1,titleColor:'#8b92a8',bodyColor:'#e8ecf5',titleFont:{family:'JetBrains Mono',size:10},bodyFont:{family:'JetBrains Mono',size:11}}},scales:{x:{ticks:{color:'#5a6078',font:{family:'JetBrains Mono',size:9},maxTicksLimit:8},grid:{color:'rgba(42,47,61,.5)'},border:{color:'#2a2f3d'}},y:{ticks:{color:'#5a6078',font:{family:'JetBrains Mono',size:9}},grid:{color:'rgba(42,47,61,.5)'},border:{color:'#2a2f3d'}}}};
+  equityChart=new Chart(document.getElementById('eqChart'),{type:'line',data:{labels:eqData.map(p=>p.timestamp?.slice(0,10)),datasets:[{data:eqData.map(p=>p.equity),borderColor:col,borderWidth:1.5,fill:true,backgroundColor:isPos?'rgba(62,207,142,.06)':'rgba(240,96,96,.06)',pointRadius:0,tension:.3}]},options:{...cOpts,plugins:{...cOpts.plugins,tooltip:{...cOpts.plugins.tooltip,callbacks:{label:ctx=>`$${ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`}}}}});
+  ddChart=new Chart(document.getElementById('ddChartCanvas'),{type:'line',data:{labels:ddData.map(p=>p.timestamp?.slice(0,10)),datasets:[{data:ddData.map(p=>p.drawdown_pct),borderColor:'#f06060',borderWidth:1.5,fill:true,backgroundColor:'rgba(240,96,96,.08)',pointRadius:0,tension:.2}]},options:{...cOpts,plugins:{...cOpts.plugins,tooltip:{...cOpts.plugins.tooltip,callbacks:{label:ctx=>`${ctx.parsed.y.toFixed(2)}%`}}}}});
+}
+
+function renderExitBd(bd,total) {
+  const el=document.getElementById('exitBd'); if(!el||!bd) return;
+  const colors={signal:'#4f8ef7',stop_loss:'#f06060',take_profit:'#3ecf8e'};
+  const labels={signal:'Signal exit',stop_loss:'Stop loss',take_profit:'Take profit'};
+  el.innerHTML=Object.entries(bd).map(([k,v])=>{
+    const pct=total?(v/total*100).toFixed(0):0;
+    return`<div class="breakdown-row"><div class="breakdown-lbl">${labels[k]||k}</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${pct}%;background:${colors[k]||'#8b92a8'};"></div></div><div class="breakdown-count">${v}</div></div>`;
+  }).join('');
+}
+
+function renderTrades(trades) {
+  const tbody=document.getElementById('tradeBody'); if(!tbody) return;
+  if(!trades?.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:20px;">No trades executed</td></tr>';return;}
+  tbody.innerHTML=trades.map((t,i)=>{
+    const pos=t.pnl>=0;
+    const rc=t.exit_reason==='signal'?'r-signal':t.exit_reason==='stop_loss'?'r-stop':'r-tp';
+    const rl=t.exit_reason==='stop_loss'?'Stop loss':t.exit_reason==='take_profit'?'Take profit':'Signal';
+    return`<tr><td style="color:var(--text3);">${i+1}</td><td>${(t.entry_time||'').slice(0,16).replace('T',' ')}</td><td>${(t.exit_time||'').slice(0,16).replace('T',' ')}</td><td>$${t.entry_price?.toFixed(2)}</td><td>$${t.exit_price?.toFixed(2)}</td><td>${t.shares?.toFixed(2)}</td><td class="${pos?'td-pos':'td-neg'}">${pos?'+':''}$${t.pnl?.toFixed(2)}</td><td class="${pos?'td-pos':'td-neg'}">${pos?'+':''}${t.pnl_pct?.toFixed(2)}%</td><td>${t.bars_held}</td><td><span class="reason-pill ${rc}">${rl}</span></td></tr>`;
+  }).join('');
+}
+
+// ─── Approve ──────────────────────────────────────────────────────────────────
+function showApproveBar(runId) {
+  const el=document.getElementById('approveSection'); if(!el) return;
+  el.innerHTML=`<div class="approve-bar"><div class="approve-info"><div class="approve-title">Approve this backtest?</div><div class="approve-sub">Marks strategy+ticker as ready for paper trading in Neon registry.</div></div><input class="approve-notes-inp" id="approveNotes" placeholder="Approval notes..."><button class="approve-btn-green" onclick="approveBacktest(${runId})">✓ Approve</button></div>`;
+}
+async function approveBacktest(runId) {
+  const notes=document.getElementById('approveNotes')?.value||'';
+  const btn=document.querySelector('.approve-btn-green');
+  if(btn){btn.textContent='Approving...';btn.disabled=true;}
+  try {
+    const res=await fetch(`${API()}/api/registry/backtest/${runId}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})});
+    const data=await res.json();
+    if(data.success){
+      document.getElementById('approveSection').innerHTML=`<div class="approve-success-bar"><span style="font-size:16px;">✓</span> Strategy approved — v${data.new_version} saved. Ready for paper trading.</div>`;
+      document.getElementById('paperDot').style.display='block';
+    }
+  } catch(e){if(btn){btn.textContent='✗ Error';btn.disabled=false;}}
+}
+
+// ─── AI Review ────────────────────────────────────────────────────────────────
+async function runAIReview(d) {
+  const body=document.getElementById('aiBody'); if(!body) return;
+  const {provider,model}=getSettings();
+  body.innerHTML=`<div class="ai-loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="margin-left:4px;">Analysing with ${provider}...</span></div>`;
+  try {
+    const res=await fetch(`${API()}/api/ai/review`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({backtest_result:d,provider,model})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.detail||`HTTP ${res.status}`);
+    renderAIReview(body, data.review);
+  } catch(err) {
+    body.innerHTML=`<div style="color:var(--red);font-size:12px;display:flex;gap:7px;"><span>⚠</span><div><div style="font-weight:600;margin-bottom:3px;">AI Review failed</div><div style="color:var(--text3);">${err.message}</div></div></div>`;
+  }
+}
+function renderAIReview(body, r) {
+  const sc=r.score>=65?'var(--green)':r.score>=40?'var(--amber)':'var(--red)';
+  const vc=r.verdict==='strong'?'var(--green)':r.verdict==='borderline'?'var(--amber)':'var(--red)';
+  body.innerHTML=`
+    <div class="ai-verdict-row">
+      <svg class="ai-score" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="none" stroke="var(--surface3)" stroke-width="4"/><circle cx="24" cy="24" r="20" fill="none" stroke="${sc}" stroke-width="4" stroke-dasharray="${2*Math.PI*20}" stroke-dashoffset="${2*Math.PI*20*(1-r.score/100)}" stroke-linecap="round" transform="rotate(-90 24 24)"/><text x="24" y="24" text-anchor="middle" dominant-baseline="central" fill="${sc}" font-size="10" font-weight="700" font-family="JetBrains Mono">${r.score}</text></svg>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:${vc};margin-bottom:4px;">${r.verdict==='strong'?'✓':r.verdict==='borderline'?'◈':'✕'} ${r.verdict_text}</div>
+        <span class="ready-tag ${r.ready_for_paper_trading?'yes':'no'}">${r.ready_for_paper_trading?'✓ Ready for paper trading':'✕ Not ready'}</span>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">${r.ready_reason}</div>
+      </div>
+    </div>
+    <div class="ai-grid">
+      <div><div class="ai-col-title" style="color:var(--green);">✓ Strengths</div>${(r.strengths||[]).map(s=>`<div class="ai-item good">${s}</div>`).join('')}</div>
+      <div><div class="ai-col-title" style="color:var(--red);">✕ Issues</div>${(r.issues||[]).map(s=>`<div class="ai-item bad">${s}</div>`).join('')}</div>
+    </div>
+    <div style="margin-bottom:8px;"><div class="ai-col-title" style="color:var(--accent);">→ Suggestions</div>${(r.suggestions||[]).map((s,i)=>`<div class="ai-item sug" style="border-color:var(--accent);display:flex;gap:6px;"><span style="color:var(--accent);font-weight:700;flex-shrink:0;">${i+1}.</span><span>${s}</span></div>`).join('')}</div>
+    ${r.regime_warning?`<div class="ai-warn-box"><span style="flex-shrink:0;">⚠</span><span>${r.regime_warning}</span></div>`:''}
+  `;
+}
+
+// ─── Registry ─────────────────────────────────────────────────────────────────
+async function loadRegistry() {
+  const status=document.getElementById('regFilter')?.value||'';
+  const url=`${API()}/api/registry/strategies${status?`?status=${status}`:''}`;
+  try {
+    const res=await fetch(url); const data=await res.json();
+    const rows=document.getElementById('registryRows');
+    const strategies=data.strategies||[];
+    if(!strategies.length){rows.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px;">No strategies found</div>';return;}
+    const backtests=await Promise.all(strategies.map(async s=>{
+      try{const r=await fetch(`${API()}/api/registry/backtest?strategy_id=${s.strategy_id}&limit=1`);const d=await r.json();return(d.results||[])[0]||null;}catch{return null;}
+    }));
+    rows.innerHTML=strategies.map((s,i)=>{
+      const bt=backtests[i];
+      const sc={draft:'s-draft',backtested:'s-backtested',approved:'s-approved',paper_trading:'s-paper',live:'s-live'}[s.status]||'s-draft';
+      return`<div class="registry-row">
+        <div><div class="reg-name">${s.strategy_name}</div><div class="reg-id">${s.strategy_id?.slice(0,8)}…</div></div>
+        <div style="font-family:var(--mono);font-size:12px;">${bt?.symbol||'—'}</div>
+        <div><span class="status-badge ${sc}">${s.status}</span></div>
+        <div class="metric-val">${bt?.sharpe_ratio!=null?parseFloat(bt.sharpe_ratio).toFixed(2):'—'}</div>
+        <div class="metric-val ${bt?.total_return_pct>=0?'td-pos':'td-neg'}">${bt?.total_return_pct!=null?(bt.total_return_pct>=0?'+':'')+parseFloat(bt.total_return_pct).toFixed(2)+'%':'—'}</div>
+        <div style="font-size:11px;color:var(--text3);">${s.created_at?.slice(0,10)||'—'}</div>
+        <div class="reg-actions">
+          <button class="reg-btn" onclick="loadStrategyFromRegistry('${s.strategy_id}','${JSON.stringify(s.strategy_json).replace(/'/g,"\\'")}')">Load</button>
+          <button class="reg-btn" onclick="viewHistory('${s.strategy_id}')">History</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){document.getElementById('registryRows').innerHTML='<div style="padding:24px;text-align:center;color:var(--red);font-size:12px;">Failed to load registry</div>';}
+}
+
+function loadStrategyFromRegistry(stratId, jsonStr) {
+  try {
+    const strategy = JSON.parse(jsonStr);
+    AppState.registryId = stratId;
+    if (strategy.strategy_name) { AppState.strategyName=strategy.strategy_name; document.getElementById('strategyName').value=strategy.strategy_name; }
+    navigate('designer');
+  } catch(e) { alert('Could not load strategy: '+e.message); }
+}
+
+async function viewHistory(stratId) {
+  try {
+    const res=await fetch(`${API()}/api/registry/strategies/${stratId}/history`);
+    const data=await res.json();
+    const versions=data.versions||[];
+    alert(`Version history for ${stratId.slice(0,8)}...\n\n${versions.map(v=>`v${v.version} — ${v.status} — ${v.effective_from?.slice(0,10)} ${v.is_current?'(current)':''}`).join('\n')}`);
+  } catch(e) { alert('Could not load history'); }
+}
+
+// ─── Paper Trading ────────────────────────────────────────────────────────────
+async function loadPaperSummary() {
+  try {
+    const res=await fetch(`${API()}/api/paper/summary`);
+    const data=await res.json();
+    const el=document.getElementById('paperContent');
+    const summary=data.summary||[];
+    if(!summary.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0;">No active paper trading deployments.<br><br>Approve a backtest to create a deployment.</div>';return;}
+    el.innerHTML=summary.map(d=>`
+      <div class="deploy-card">
+        <div class="deploy-top">
+          <div>
+            <div class="deploy-name">${d.strategy_name} — ${d.symbol}</div>
+            <div class="deploy-meta">Started ${d.started_at?.slice(0,10)||'—'} · $${d.capital?.toLocaleString()} allocated</div>
+          </div>
+          <button class="stop-btn" onclick="stopDeployment(${d.deployment_id})">■ Stop</button>
+        </div>
+        <div class="deploy-metrics">
+          <div class="deploy-metric"><div class="deploy-m-val ${d.total_pnl>=0?'td-pos':'td-neg'}">${d.total_pnl>=0?'+':''}$${d.total_pnl?.toFixed(2)}</div><div class="deploy-m-lbl">Total P&L</div></div>
+          <div class="deploy-metric"><div class="deploy-m-val">${d.win_rate?.toFixed(1)}%</div><div class="deploy-m-lbl">Win Rate</div></div>
+          <div class="deploy-metric"><div class="deploy-m-val">${d.total_trades}</div><div class="deploy-m-lbl">Trades</div></div>
+          <div class="deploy-metric"><div class="deploy-m-val">${d.open_positions}</div><div class="deploy-m-lbl">Open Positions</div></div>
+          <div class="deploy-metric"><div class="deploy-m-val" style="color:var(--green);">●</div><div class="deploy-m-lbl">Active</div></div>
+        </div>
+      </div>`).join('');
+  } catch(e){document.getElementById('paperContent').innerHTML='<div style="color:var(--red);font-size:12px;">Failed to load paper trading data</div>';}
+}
+
+async function stopDeployment(id) {
+  if(!confirm('Stop this deployment?')) return;
+  await fetch(`${API()}/api/paper/deployments/${id}/stop`,{method:'PUT'});
+  loadPaperSummary();
+}
+
+// ─── Save to Registry ─────────────────────────────────────────────────────────
+function openSaveModal() {
+  document.getElementById('saveModalName').textContent=AppState.strategyName;
+  document.getElementById('saveModalNotes').value='';
+  document.getElementById('saveModal').style.display='flex';
+  setTimeout(()=>document.getElementById('saveModalNotes').focus(),100);
+}
+function closeSaveModal() { document.getElementById('saveModal').style.display='none'; }
+async function confirmSave() {
+  const btn=document.getElementById('confirmSaveBtn');
+  btn.textContent='Saving...'; btn.disabled=true;
+  try {
+    const res=await fetch(`${API()}/api/registry/strategies`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({strategy:buildStrategyJSON(),notes:document.getElementById('saveModalNotes').value,created_by:'user'})});
+    const data=await res.json();
+    if(data.success){
+      AppState.registryId=data.strategy.strategy_id;
+      closeSaveModal();
+      btn.textContent='Save to Registry'; btn.disabled=false;
+    }
+  } catch(e){ btn.textContent='✗ Failed'; btn.disabled=false; setTimeout(()=>{btn.textContent='Save to Registry';btn.disabled=false;},2000); }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadSettings();
+loadAppState();
+render();
+setSym('SPY');
+</script>
+</body>
+</html>

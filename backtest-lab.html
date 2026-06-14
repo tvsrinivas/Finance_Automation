@@ -130,6 +130,80 @@ tbody td{padding:9px 12px;font-family:var(--mono);color:var(--text2);white-space
 /* ── Error banner ── */
 .error-banner{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.25);border-radius:8px;padding:14px 16px;color:var(--red);font-size:12px;display:flex;align-items:center;gap:10px;}
 
+/* ── AI Review Panel ── */
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:20px;}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.ai-panel-title{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px;}
+.ai-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(199,146,234,.12);color:#c792ea;border:1px solid rgba(199,146,234,.25);}
+.ai-body{font-size:12px;color:var(--text2);line-height:1.8;}
+.ai-body p{margin-bottom:10px;}
+.ai-body p:last-child{margin-bottom:0;}
+.ai-section{margin-bottom:14px;}
+.ai-section-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.ai-section-title.verdict{color:var(--green);}
+.ai-section-title.verdict.neg{color:var(--red);}
+.ai-section-title.verdict.neutral{color:var(--amber);}
+.ai-section-title.issues{color:var(--red);}
+.ai-section-title.suggestions{color:var(--accent);}
+.ai-section-title.regime{color:var(--amber);}
+.ai-tag{display:inline-flex;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;margin:2px;font-family:var(--mono);}
+.ai-tag.good{background:rgba(62,207,142,.12);color:var(--green);}
+.ai-tag.bad{background:rgba(240,96,96,.12);color:var(--red);}
+.ai-tag.neutral{background:rgba(245,166,35,.12);color:var(--amber);}
+.ai-loading{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:12px;font-style:italic;}
+.ai-loading-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulse 1.4s ease-in-out infinite;}
+.ai-loading-dot:nth-child(2){animation-delay:.2s;}
+.ai-loading-dot:nth-child(3){animation-delay:.4s;}
+@keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+.ai-run-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(199,146,234,.1);color:#c792ea;border:1px solid rgba(199,146,234,.3);transition:all .15s;}
+.ai-run-btn:hover{background:rgba(199,146,234,.2);}
+.ai-run-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── AI Review Panel ── */
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:20px;}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.ai-panel-title{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px;}
+.ai-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(199,146,234,.12);color:#c792ea;border:1px solid rgba(199,146,234,.25);}
+.ai-body{font-size:12px;color:var(--text2);line-height:1.8;}
+.ai-loading{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:12px;font-style:italic;}
+.ai-loading-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:ai-pulse 1.4s ease-in-out infinite;}
+.ai-loading-dot:nth-child(2){animation-delay:.2s;}
+.ai-loading-dot:nth-child(3){animation-delay:.4s;}
+@keyframes ai-pulse{0%,80%,100%{opacity:.3;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+.ai-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ai-provider-sel{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-family:var(--sans);font-size:11px;padding:4px 8px;outline:none;cursor:pointer;appearance:none;padding-right:20px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' fill='none'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%235a6078' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;}
+.ai-provider-sel:focus{border-color:var(--purple);}
+.ai-model-inp{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:4px 8px;outline:none;width:160px;}
+.ai-model-inp:focus{border-color:var(--purple);}
+.ai-key-inp{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:4px 8px;outline:none;width:140px;}
+.ai-key-inp:focus{border-color:var(--purple);}
+.ai-run-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:rgba(199,146,234,.1);color:#c792ea;border:1px solid rgba(199,146,234,.3);transition:all .15s;white-space:nowrap;}
+.ai-run-btn:hover:not(:disabled){background:rgba(199,146,234,.2);}
+.ai-run-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ai-score-ring{width:52px;height:52px;flex-shrink:0;}
+.ai-verdict-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px;}
+.ai-col-title{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
+.ai-item{font-size:11px;color:var(--text2);margin-bottom:5px;padding-left:8px;border-left:2px solid;line-height:1.5;}
+.ai-item.good{border-color:var(--green);}
+.ai-item.bad{border-color:var(--red);}
+.ai-item.sug{border-color:var(--accent);}
+.ai-warn{padding:9px 12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:6px;font-size:11px;color:var(--amber);display:flex;gap:8px;margin-top:10px;}
+.ai-ready-tag{display:inline-flex;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;margin-top:4px;}
+.ai-ready-tag.yes{background:rgba(62,207,142,.12);color:var(--green);}
+.ai-ready-tag.no{background:rgba(240,96,96,.12);color:var(--red);}
+
+/* ── Approve ── */
+.approve-panel{margin-top:16px;padding:16px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.approve-info{flex:1;min-width:200px;}
+.approve-title{font-size:12px;font-weight:600;margin-bottom:3px;}
+.approve-sub{font-size:11px;color:var(--text3);}
+.approve-notes{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 10px;width:220px;outline:none;flex-shrink:0;}
+.approve-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--green);color:white;border:none;white-space:nowrap;flex-shrink:0;transition:opacity .15s;}
+.approve-btn:hover{opacity:.85;}
+.approve-btn:disabled{opacity:.5;cursor:not-allowed;}
+.approve-success{margin-top:16px;padding:14px 16px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:8px;color:var(--green);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
@@ -238,6 +312,27 @@ tbody td{padding:9px 12px;font-family:var(--mono);color:var(--text2);white-space
       <div id="jsonStatus" class="json-status"></div>
     </div>
 
+    <!-- LLM Config -->
+    <div>
+      <div class="section-label">AI Review Config</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">API key configured in backend .env</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="field">
+          <label>Provider</label>
+          <select id="llmProvider" class="sel-inp" onchange="onProviderChange()">
+            <option value="anthropic">Anthropic Claude</option>
+            <option value="openai">OpenAI</option>
+            <option value="openrouter">OpenRouter</option>
+            <option value="groq">Groq</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <input id="llmModel" class="inp" type="text" value="claude-sonnet-4-6" placeholder="model name">
+        </div>
+      </div>
+    </div>
+
     <button id="runBtn" class="btn btn-primary" onclick="runBacktest()" disabled>
       Run Backtest
     </button>
@@ -288,11 +383,35 @@ tbody td{padding:9px 12px;font-family:var(--mono);color:var(--text2);white-space
         </div>
       </div>
 
+      <!-- AI Review Panel -->
+      <div class="ai-panel" id="aiReviewPanel" style="display:none;">
+        <div class="ai-panel-header">
+          <div class="ai-panel-title">
+            <span style="color:var(--purple);">⬡</span>
+            AI Strategy Review
+            <span class="ai-badge" id="aiBadge">✦ Claude</span>
+          </div>
+          <div class="ai-controls">
+            <button class="ai-run-btn" id="aiRunBtn" onclick="runAIReview()" disabled>
+              ↻ Re-analyse
+            </button>
+          </div>
+        </div>
+        <div id="aiReviewBody" class="ai-body">
+          <div class="ai-loading">
+            <div class="ai-loading-dot"></div>
+            <div class="ai-loading-dot"></div>
+            <div class="ai-loading-dot"></div>
+            Waiting for backtest results...
+          </div>
+        </div>
+      </div>
+
       <!-- Approve section -->
       <div id="approveSection"></div>
 
       <!-- Trade log -->
-      <div style="margin-bottom:12px;margin-top:16px;">
+      <div style="margin-bottom:12px;margin-top:4px;">
         <div class="section-label">Trade Log</div>
       </div>
       <div class="table-wrap">
@@ -410,8 +529,6 @@ async function runBacktest() {
   const strategy = validateJson();
   if (!strategy) return;
 
-  const strategyId = localStorage.getItem('pending_strategy_id') || null;
-
   const payload = {
     strategy,
     symbol:           document.getElementById('symbol').value.toUpperCase().trim(),
@@ -423,13 +540,6 @@ async function runBacktest() {
     timeframe:        document.getElementById('timeframe').value,
     position_sizing:  document.getElementById('positionSizing').value,
   };
-
-  // Use registry endpoint if strategy was saved to registry
-  if (strategyId) {
-    payload.strategy_id = strategyId;
-  }
-
-  const endpoint = strategyId ? `${API}/api/registry/backtest` : `${API}/api/backtest`;
 
   showLoading();
 
@@ -449,7 +559,7 @@ async function runBacktest() {
       }
     }, 1200);
 
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${API}/api/backtest`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload),
@@ -554,13 +664,22 @@ function renderResults(d) {
   // Trade table
   renderTradeTable(d.trade_log);
 
-  // Show approve panel if this came from registry (has run_id)
+  // Show approve panel if registry backtest
   if (d.run_id) {
     showApprovePanel(d.run_id);
   } else {
-    const approveDiv = document.getElementById('approveSection');
-    if (approveDiv) approveDiv.innerHTML = '';
+    const el = document.getElementById('approveSection');
+    if (el) el.innerHTML = '';
   }
+
+  // Show AI panel and auto-run review if API key set
+  const panel = document.getElementById('aiReviewPanel');
+  const btn   = document.getElementById('aiRunBtn');
+  if (panel) panel.style.display = 'block';
+  if (btn)   btn.disabled = false;
+
+  // Always auto-run AI review — API key is in backend .env
+  runAIReview(d);
 }
 
 function fmt(val, unit, decimals) {
@@ -712,22 +831,186 @@ function fmtTime(ts) {
   return ts ? ts.slice(0,16).replace('T',' ') : '—';
 }
 
+// ─── LLM Provider Config ─────────────────────────────────────────────────────
+const LLM_PROVIDERS = {
+  anthropic: {
+    label:    'Anthropic Claude',
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    default_model: 'claude-sonnet-4-6',
+    badge:    '✦ Claude',
+  },
+  openai: {
+    label:    'OpenAI',
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    default_model: 'gpt-4o',
+    badge:    '✦ OpenAI',
+  },
+  openrouter: {
+    label:    'OpenRouter',
+    endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+    default_model: 'anthropic/claude-sonnet-4-6',
+    badge:    '✦ OpenRouter',
+  },
+  groq: {
+    label:    'Groq',
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    default_model: 'llama-3.3-70b-versatile',
+    badge:    '✦ Groq',
+  },
+};
+
+function onProviderChange() {
+  const provider = document.getElementById('llmProvider').value;
+  const cfg      = LLM_PROVIDERS[provider];
+  document.getElementById('llmModel').value    = cfg.default_model;
+  document.getElementById('aiBadge').textContent = cfg.badge;
+}
+
+function getLLMConfig() {
+  const provider = document.getElementById('llmProvider').value;
+  const model    = document.getElementById('llmModel').value.trim();
+  return { provider, model, ...LLM_PROVIDERS[provider] };
+}
+
+// ─── LLM API caller — routes through local backend (no CORS issues) ──────────
+async function callLLM(backtestData) {
+  const cfg = getLLMConfig();
+
+  // All LLM calls go through the local FastAPI backend
+  // Backend holds the API keys in .env — no keys in the browser
+  const res = await fetch(`${API}/api/ai/review`, {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body:    JSON.stringify({
+      backtest_result: backtestData,
+      provider:        cfg.provider,
+      model:           cfg.model,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.detail || `HTTP ${res.status} — check backend logs`);
+  }
+
+  const data = await res.json();
+  return data.review;  // already parsed JSON object from backend
+}
+
+// ─── AI Backtest Interpretation Agent ────────────────────────────────────────
+let _lastBacktestData = null;
+
+async function runAIReview(data) {
+  const panel = document.getElementById('aiReviewPanel');
+  const body  = document.getElementById('aiReviewBody');
+  const btn   = document.getElementById('aiRunBtn');
+
+  const d = data || _lastBacktestData;
+  if (!d) return;
+  _lastBacktestData = d;
+
+  panel.style.display = 'block';
+  btn.disabled = true;
+
+  body.innerHTML = `
+    <div class="ai-loading">
+      <div class="ai-loading-dot"></div>
+      <div class="ai-loading-dot"></div>
+      <div class="ai-loading-dot"></div>
+      <span>Analysing with ${getLLMConfig().label}...</span>
+    </div>`;
+
+  try {
+    // Pass full backtest data to backend — backend builds prompt and calls LLM
+    const review = await callLLM(d);
+    renderAIReview(body, review);
+  } catch(err) {
+    body.innerHTML = `
+      <div style="color:var(--red);font-size:12px;display:flex;align-items:flex-start;gap:8px;">
+        <span style="flex-shrink:0;">⚠</span>
+        <div>
+          <div style="font-weight:600;margin-bottom:4px;">AI Review failed</div>
+          <div style="color:var(--text3);">${err.message}</div>
+          <div style="margin-top:6px;color:var(--text3);">
+            Check your API key and provider selection in the sidebar.
+          </div>
+        </div>
+      </div>`;
+  }
+
+  btn.disabled = false;
+}
+
+function renderAIReview(body, r) {
+  const scoreColor = r.score >= 65 ? 'var(--green)' : r.score >= 40 ? 'var(--amber)' : 'var(--red)';
+  const verdictColor = r.verdict === 'strong' ? 'var(--green)' : r.verdict === 'borderline' ? 'var(--amber)' : 'var(--red)';
+  const icon = r.verdict === 'strong' ? '✓' : r.verdict === 'borderline' ? '◈' : '✕';
+
+  body.innerHTML = `
+    <div class="ai-verdict-row">
+      <svg class="ai-score-ring" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="22" fill="none" stroke="var(--surface3)" stroke-width="4"/>
+        <circle cx="26" cy="26" r="22" fill="none" stroke="${scoreColor}" stroke-width="4"
+          stroke-dasharray="${2*Math.PI*22}" stroke-dashoffset="${2*Math.PI*22*(1-r.score/100)}"
+          stroke-linecap="round" transform="rotate(-90 26 26)"/>
+        <text x="26" y="26" text-anchor="middle" dominant-baseline="central"
+          fill="${scoreColor}" font-size="11" font-weight="700" font-family="JetBrains Mono">${r.score}</text>
+      </svg>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:${verdictColor};margin-bottom:4px;">
+          ${icon} ${r.verdict_text}
+        </div>
+        <span class="ai-ready-tag ${r.ready_for_paper_trading ? 'yes' : 'no'}">
+          ${r.ready_for_paper_trading ? '✓ Ready for paper trading' : '✕ Not ready for paper trading'}
+        </span>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">${r.ready_reason}</div>
+      </div>
+    </div>
+
+    <div class="ai-grid">
+      <div>
+        <div class="ai-col-title" style="color:var(--green);">✓ Strengths</div>
+        ${(r.strengths||[]).map(s=>`<div class="ai-item good">${s}</div>`).join('')}
+      </div>
+      <div>
+        <div class="ai-col-title" style="color:var(--red);">✕ Issues</div>
+        ${(r.issues||[]).map(s=>`<div class="ai-item bad">${s}</div>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <div class="ai-col-title" style="color:var(--accent);">→ Suggestions</div>
+      ${(r.suggestions||[]).map((s,i)=>`
+        <div class="ai-item sug" style="border-color:var(--accent);display:flex;gap:6px;">
+          <span style="color:var(--accent);font-family:var(--mono);font-weight:700;flex-shrink:0;">${i+1}.</span>
+          <span>${s}</span>
+        </div>`).join('')}
+    </div>
+
+    ${r.regime_warning ? `
+    <div class="ai-warn">
+      <span style="flex-shrink:0;">⚠</span>
+      <span>${r.regime_warning}</span>
+    </div>` : ''}
+  `;
+}
+
 // ─── Approve backtest ─────────────────────────────────────────────────────────
 async function approveBacktest(runId) {
   const notes = document.getElementById('approveNotes')?.value || '';
-  const btn = document.querySelector('#approveSection button');
+  const btn   = document.querySelector('#approveSection .approve-btn');
   if (btn) { btn.textContent = 'Approving...'; btn.disabled = true; }
 
   try {
     const res = await fetch(`${API}/api/registry/backtest/${runId}/approve`, {
-      method: 'POST',
+      method:  'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({notes}),
+      body:    JSON.stringify({notes}),
     });
     const data = await res.json();
     if (data.success) {
       document.getElementById('approveSection').innerHTML = `
-        <div style="margin-top:16px;padding:14px 16px;background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:8px;color:var(--green);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;">
+        <div class="approve-success">
           <span style="font-size:16px;">✓</span>
           Strategy approved — version ${data.new_version} saved to registry. Ready for paper trading.
         </div>`;
@@ -736,31 +1019,28 @@ async function approveBacktest(runId) {
       if (btn) { btn.textContent = '✗ Failed'; btn.disabled = false; }
     }
   } catch(e) {
-    if (btn) { btn.textContent = '✗ Connection error'; btn.disabled = false; }
+    if (btn) { btn.textContent = '✗ Error'; btn.disabled = false; }
   }
 }
 
-// ─── Show approve panel after results ─────────────────────────────────────────
 function showApprovePanel(runId) {
-  const approveDiv = document.getElementById('approveSection');
-  if (!runId || !approveDiv) return;
-  approveDiv.innerHTML = `
-    <div style="margin-top:16px;padding:16px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:200px;">
-        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">Approve this backtest?</div>
-        <div style="font-size:11px;color:var(--text3);">Approving marks this strategy as ready for paper trading in the Neon registry.</div>
+  const el = document.getElementById('approveSection');
+  if (!runId || !el) return;
+  el.innerHTML = `
+    <div class="approve-panel">
+      <div class="approve-info">
+        <div class="approve-title">Approve this backtest?</div>
+        <div class="approve-sub">Approving marks this strategy+ticker as ready for paper trading in Neon.</div>
       </div>
-      <input id="approveNotes" placeholder="Add approval notes..." style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:7px 10px;width:220px;outline:none;flex-shrink:0;">
-      <button onclick="approveBacktest(${runId})" style="display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--green);color:white;border:none;white-space:nowrap;flex-shrink:0;">
-        ✓ Approve Strategy
-      </button>
+      <input id="approveNotes" class="approve-notes" placeholder="Add approval notes...">
+      <button onclick="approveBacktest(${runId})" class="approve-btn">✓ Approve Strategy</button>
     </div>`;
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 setSymbol('SPY');
 
-// Auto-load strategy passed from Strategy Builder via localStorage
+// Auto-load strategy from Strategy Builder
 const pending   = localStorage.getItem('pending_strategy');
 const pendingId = localStorage.getItem('pending_strategy_id');
 if (pending) {
