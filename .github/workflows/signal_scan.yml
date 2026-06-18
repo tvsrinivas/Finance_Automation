@@ -38,8 +38,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # Pull latest state committed by previous runs
           ref: ${{ github.ref }}
 
       - name: Set up Python
