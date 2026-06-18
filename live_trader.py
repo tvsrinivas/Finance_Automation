@@ -88,8 +88,8 @@ MIN_CONTRACTS      = 1       # floor
 MAX_CONTRACTS      = 5       # ceiling
 # ─────────────────────────────────────────────────────────────────────────────
 
-API_KEY    = os.environ["ALPACA_API_KEY"]
-SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
+API_KEY    = os.environ["ALPACA_API_KEY"].strip()
+SECRET_KEY = os.environ["ALPACA_SECRET_KEY"].strip()
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ── Clients ───────────────────────────────────────────────────────────────────
