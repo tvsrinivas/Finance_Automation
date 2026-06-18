@@ -1,5 +1,6 @@
 {
   "date": "2026-06-18",
   "symbol": "TSLA",
-  "skip": "error: Invalid leading whitespace, reserved character(s), or return character(s) in header value: 'PKCPJL6ZSDENHA2QDCINXWXPWG\\n'"
+  "atr": 16.5162,
+  "skip": "no intraday data"
 }
