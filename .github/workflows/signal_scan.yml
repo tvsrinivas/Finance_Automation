@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────────────────────────────
+# STEP 2 — Signal Scan (every 5 min, 9:40–11:00 ET)
+# Looks for Hammer / Bullish Engulfing below b_low.
+# Places option order when signal fires.
+# 9:40 ET = 13:40 UTC  →  11:00 ET = 15:00 UTC
+# ─────────────────────────────────────────────────────────────────
+name: "Trading — 2. Signal Scan (5 min)"
+
+on:
+  schedule:
+    - cron: "40 13 * * 1-5"   # 9:40 ET
+    - cron: "45 13 * * 1-5"   # 9:45 ET
+    - cron: "50 13 * * 1-5"   # 9:50 ET
+    - cron: "55 13 * * 1-5"   # 9:55 ET
+    - cron: "0  14 * * 1-5"   # 10:00 ET
+    - cron: "5  14 * * 1-5"   # 10:05 ET
+    - cron: "10 14 * * 1-5"   # 10:10 ET
+    - cron: "15 14 * * 1-5"   # 10:15 ET
+    - cron: "20 14 * * 1-5"   # 10:20 ET
+    - cron: "25 14 * * 1-5"   # 10:25 ET
+    - cron: "30 14 * * 1-5"   # 10:30 ET
+    - cron: "35 14 * * 1-5"   # 10:35 ET
+    - cron: "40 14 * * 1-5"   # 10:40 ET
+    - cron: "45 14 * * 1-5"   # 10:45 ET
+    - cron: "50 14 * * 1-5"   # 10:50 ET
+    - cron: "55 14 * * 1-5"   # 10:55 ET
+    - cron: "0  15 * * 1-5"   # 11:00 ET
+  workflow_dispatch:
+
+jobs:
+  signal-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Pull latest state committed by previous runs
+          ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run signal scan
+        env:
+          ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python live_trader.py --mode scan
+
+      - name: Commit state files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state/
+          git diff --cached --quiet || git commit -m "state: signal scan $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

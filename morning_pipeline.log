@@ -186,3 +186,226 @@ Processing hypothesis 2/2: rsi_oversold_recovery
 [SQL: show standard_conforming_strings]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 2026-06-14 15:46:44,399  INFO  db.connection  Neon database connection OK
+2026-06-14 15:48:11,072  INFO  db.connection  Neon database connection OK
+2026-06-14 15:48:41,214  INFO  agents.symbol_classifier  Classifying 37 symbols...
+2026-06-14 15:48:41,214  INFO  agents.symbol_classifier    [1/37] SPY
+2026-06-14 15:48:45,584  INFO  agents.symbol_classifier      -> ['sma_crossover', 'mean_reversion']
+2026-06-14 15:48:45,584  INFO  agents.symbol_classifier    [2/37] QQQ
+2026-06-14 15:48:48,400  INFO  agents.symbol_classifier      -> ['mean_reversion']
+2026-06-14 15:48:48,409  INFO  agents.symbol_classifier    [3/37] AAPL
+2026-06-14 15:48:51,627  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery']
+2026-06-14 15:48:51,627  INFO  agents.symbol_classifier    [4/37] MSFT
+2026-06-14 15:48:54,084  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:48:54,084  INFO  agents.symbol_classifier    [5/37] NVDA
+2026-06-14 15:48:56,804  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery', 'mean_reversion']
+2026-06-14 15:48:56,804  INFO  agents.symbol_classifier    [6/37] AMZN
+2026-06-14 15:48:59,146  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery', 'mean_reversion']
+2026-06-14 15:48:59,146  INFO  agents.symbol_classifier    [7/37] META
+2026-06-14 15:49:02,065  INFO  agents.symbol_classifier      -> ['mean_reversion']
+2026-06-14 15:49:02,071  INFO  agents.symbol_classifier    [8/37] GOOGL
+2026-06-14 15:49:04,190  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery', 'sma_crossover']
+2026-06-14 15:49:04,192  INFO  agents.symbol_classifier    [9/37] TSLA
+2026-06-14 15:49:07,633  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:07,633  INFO  agents.symbol_classifier    [10/37] BRK.B
+2026-06-14 15:49:09,647  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:09,647  INFO  agents.symbol_classifier    [11/37] JPM
+2026-06-14 15:49:12,822  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:12,822  INFO  agents.symbol_classifier    [12/37] LLY
+2026-06-14 15:49:15,211  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:15,211  INFO  agents.symbol_classifier    [13/37] V
+2026-06-14 15:49:19,068  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:19,068  INFO  agents.symbol_classifier    [14/37] UNH
+2026-06-14 15:49:21,812  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:21,812  INFO  agents.symbol_classifier    [15/37] XOM
+2026-06-14 15:49:25,007  INFO  agents.symbol_classifier      -> ['momentum_breakout', 'mean_reversion']
+2026-06-14 15:49:25,007  INFO  agents.symbol_classifier    [16/37] MA
+2026-06-14 15:49:27,872  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:27,872  INFO  agents.symbol_classifier    [17/37] JNJ
+2026-06-14 15:49:30,331  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:30,331  INFO  agents.symbol_classifier    [18/37] HD
+2026-06-14 15:49:32,886  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:32,894  INFO  agents.symbol_classifier    [19/37] PG
+2026-06-14 15:49:35,761  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:35,761  INFO  agents.symbol_classifier    [20/37] COST
+2026-06-14 15:49:37,806  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:37,806  INFO  agents.symbol_classifier    [21/37] ABBV
+2026-06-14 15:49:40,977  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:40,977  INFO  agents.symbol_classifier    [22/37] MRK
+2026-06-14 15:49:44,105  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:44,105  INFO  agents.symbol_classifier    [23/37] CVX
+2026-06-14 15:49:46,644  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:46,644  INFO  agents.symbol_classifier    [24/37] KO
+2026-06-14 15:49:49,372  INFO  agents.symbol_classifier      -> ['mean_reversion']
+2026-06-14 15:49:49,381  INFO  agents.symbol_classifier    [25/37] BAC
+2026-06-14 15:49:53,718  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery']
+2026-06-14 15:49:53,718  INFO  agents.symbol_classifier    [26/37] AMD
+2026-06-14 15:49:57,058  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:49:57,058  INFO  agents.symbol_classifier    [27/37] NFLX
+2026-06-14 15:49:59,758  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery']
+2026-06-14 15:49:59,758  INFO  agents.symbol_classifier    [28/37] WMT
+2026-06-14 15:50:03,511  INFO  agents.symbol_classifier      -> ['mean_reversion', 'momentum_breakout']
+2026-06-14 15:50:03,511  INFO  agents.symbol_classifier    [29/37] CRM
+2026-06-14 15:50:06,859  INFO  agents.symbol_classifier      -> ['mean_reversion']
+2026-06-14 15:50:06,868  INFO  agents.symbol_classifier    [30/37] PEP
+2026-06-14 15:50:09,329  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:50:09,337  INFO  agents.symbol_classifier    [31/37] XLK
+2026-06-14 15:50:12,626  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:50:12,626  INFO  agents.symbol_classifier    [32/37] XLE
+2026-06-14 15:50:16,652  INFO  agents.symbol_classifier      -> ['rsi_oversold_recovery', 'sma_crossover']
+2026-06-14 15:50:16,660  INFO  agents.symbol_classifier    [33/37] XLF
+2026-06-14 15:50:19,455  INFO  agents.symbol_classifier      -> ['mean_reversion', 'rsi_oversold_recovery']
+2026-06-14 15:50:19,455  INFO  agents.symbol_classifier    [34/37] XLV
+2026-06-14 15:50:22,557  INFO  agents.symbol_classifier      -> ['mean_reversion']
+2026-06-14 15:50:22,557  INFO  agents.symbol_classifier    [35/37] XLI
+2026-06-14 15:50:24,906  INFO  agents.symbol_classifier      -> []
+2026-06-14 15:50:24,914  INFO  agents.symbol_classifier    [36/37] XLP
+2026-06-14 15:50:27,476  INFO  agents.symbol_classifier      -> ['mean_reversion']
+2026-06-14 15:50:27,476  INFO  agents.symbol_classifier    [37/37] XLU
+2026-06-14 15:50:30,240  INFO  agents.symbol_classifier      -> ['mean_reversion', 'rsi_oversold_recovery']
+2026-06-14 15:50:30,240  INFO  agents.symbol_classifier  Classification complete: 37 classified, 0 failed
+2026-06-14 16:12:05,801  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 16:12:05,801  INFO  agents.morning_pipeline  Morning Pipeline v2 started — 2026-06-14 20:12 UTC
+2026-06-14 16:12:05,803  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 16:12:05,803  INFO  agents.morning_pipeline  Step 1: Running Market Intelligence Agent...
+2026-06-14 16:12:05,805  INFO  agents.market_intelligence_agent  Market Intelligence Agent starting...
+2026-06-14 16:12:05,805  INFO  agents.market_intelligence_agent  Fetching market data from Alpaca...
+2026-06-14 16:12:07,734  INFO  agents.market_intelligence_agent  Fetched market data for 10 symbols
+2026-06-14 16:12:07,742  INFO  agents.market_intelligence_agent  Classifying market regime...
+2026-06-14 16:12:07,742  INFO  agents.market_intelligence_agent  Checking economic calendar...
+2026-06-14 16:12:07,750  INFO  agents.market_intelligence_agent  Market brief complete — regime=bull_volatile confidence=0.65 vix=high events=1
+2026-06-14 16:12:07,750  INFO  agents.morning_pipeline  Regime: bull_volatile (confidence: 65%)
+2026-06-14 16:12:07,750  INFO  agents.morning_pipeline  VIX: high | Breadth: mixed
+2026-06-14 16:12:07,750  INFO  agents.morning_pipeline  Event: FOMC Rate Decision in 3 days
+2026-06-14 16:12:07,758  INFO  agents.morning_pipeline  Step 2: Checking existing strategies for regime 'bull_volatile'...
+2026-06-14 16:12:08,516  INFO  agents.morning_pipeline  No recent approved strategies for bull_volatile — generating new ones
+2026-06-14 16:12:08,524  INFO  agents.morning_pipeline  Step 3: Generating strategy hypotheses...
+2026-06-14 16:12:08,524  INFO  agents.hypothesis_generator  Generating 2 hypotheses for bull_volatile regime...
+2026-06-14 16:12:45,272  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:12:45,380  INFO  agents.hypothesis_generator  Generated 2 hypotheses
+2026-06-14 16:12:45,389  INFO  agents.morning_pipeline  Generated 2 hypotheses
+2026-06-14 16:12:45,390  INFO  agents.morning_pipeline  
+Processing hypothesis 1/2: pullback_entry
+2026-06-14 16:12:45,390  INFO  agents.morning_pipeline  Goal: Pullback Entry on SPY using EMA and RSI confluence: Wait for SPY to pull back to...
+2026-06-14 16:12:45,390  INFO  agents.morning_pipeline    Creating strategy DSL...
+2026-06-14 16:12:45,390  INFO  agents.strategy_creation_agent  Strategy Creation Agent started — source=hypothesis_agent goal='Pullback Entry on SPY using EMA and RSI confluence: Wait for...'
+2026-06-14 16:12:45,390  INFO  agents.strategy_creation_agent  Step 1: Parsing intent...
+2026-06-14 16:13:03,191  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:13:03,199  INFO  agents.strategy_creation_agent  Step 1 complete: SPY EMA Pullback Confluence Entry — 3 entry concepts
+2026-06-14 16:13:03,199  INFO  agents.strategy_creation_agent  Step 2: Mapping indicators...
+2026-06-14 16:13:28,938  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:13:28,938  INFO  agents.strategy_creation_agent  Step 2 complete: 6 indicators, 3 entry conditions
+2026-06-14 16:13:28,938  INFO  agents.strategy_creation_agent  Step 3: DSL built — 6 indicators, 6 conditions
+2026-06-14 16:13:28,946  INFO  agents.strategy_creation_agent  Step 4: Validation attempt 1...
+2026-06-14 16:13:28,946  INFO  agents.strategy_creation_agent  Step 4: 1 errors — attempting self-correction
+2026-06-14 16:23:19,416  INFO  anthropic._base_client  Retrying request to /v1/messages in 0.432552 seconds
+2026-06-14 16:23:28,667  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:23:28,669  INFO  agents.strategy_creation_agent  Step 5: Self-correction attempt 1 applied
+2026-06-14 16:23:28,669  INFO  agents.strategy_creation_agent  Step 4: Validation attempt 2...
+2026-06-14 16:23:28,675  INFO  agents.strategy_creation_agent  Step 4: Valid on attempt 2
+2026-06-14 16:23:28,675  INFO  agents.strategy_creation_agent  Step 6: Generating explanation...
+2026-06-14 16:24:00,250  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:24:00,250  INFO  agents.strategy_creation_agent  Step 6: Explanation complete
+2026-06-14 16:24:00,250  INFO  agents.strategy_creation_agent  Agent complete — 5 steps, valid=True, gaps=7
+2026-06-14 16:24:00,250  INFO  agents.morning_pipeline    Strategy created: SPY EMA Pullback Confluence Entry
+2026-06-14 16:24:05,469  INFO  db.strategy_repo  Created strategy 9d942193-ab27-40fa-9d33-f78e9967a5dd v1 — SPY EMA Pullback Confluence Entry
+2026-06-14 16:24:05,471  INFO  agents.morning_pipeline    Saved to registry: 9d942193-ab27-40fa-9d33-f78e9967a5dd
+2026-06-14 16:24:06,354  INFO  agents.morning_pipeline    Running multi-symbol backtest (strategy type: pullback_entry)...
+2026-06-14 16:24:07,006  INFO  agents.morning_pipeline  DB universe for pullback_entry: ['SPY', 'AAPL', 'MSFT', 'QQQ']
+2026-06-14 16:24:07,542  INFO  agents.morning_pipeline      Backtesting on SPY...
+2026-06-14 16:24:10,062  INFO  backtest.engine  Starting backtest: SPY 2025-12-16→2026-06-14 capital=$10000.0
+2026-06-14 16:24:12,452  INFO  backtest.data  Alpaca: fetched 1082 bars for SPY
+2026-06-14 16:24:12,452  INFO  backtest.engine  Fetched 1082 bars for SPY
+2026-06-14 16:24:12,460  INFO  backtest.engine  Warmup period: 60 bars
+2026-06-14 16:24:12,644  INFO  backtest.engine  Backtest complete: 6 trades, return=-0.60%, sharpe=-2.03
+2026-06-14 16:24:12,706  INFO  db.backtest_repo  Strategy 9d942193-ab27-40fa-9d33-f78e9967a5dd promoted draft → backtested
+2026-06-14 16:24:13,667  INFO  db.backtest_repo  Saved backtest run_id=4 strategy=9d942193-ab27-40fa-9d33-f78e9967a5dd symbol=SPY
+2026-06-14 16:24:13,993  INFO  agents.morning_pipeline      SPY: trades=0 sharpe=0.00 return=0.0%
+2026-06-14 16:24:13,993  INFO  agents.morning_pipeline      Backtesting on AAPL...
+2026-06-14 16:24:16,731  INFO  backtest.engine  Starting backtest: AAPL 2025-12-16→2026-06-14 capital=$10000.0
+2026-06-14 16:24:20,180  INFO  backtest.data  Alpaca: fetched 976 bars for AAPL
+2026-06-14 16:24:20,180  INFO  backtest.engine  Fetched 976 bars for AAPL
+2026-06-14 16:24:20,183  INFO  backtest.engine  Warmup period: 60 bars
+2026-06-14 16:24:20,844  INFO  backtest.engine  Backtest complete: 1 trades, return=0.17%, sharpe=0.95
+2026-06-14 16:24:22,176  INFO  db.backtest_repo  Saved backtest run_id=5 strategy=9d942193-ab27-40fa-9d33-f78e9967a5dd symbol=AAPL
+2026-06-14 16:24:22,252  INFO  agents.morning_pipeline      AAPL: trades=0 sharpe=0.00 return=0.0%
+2026-06-14 16:24:22,252  INFO  agents.morning_pipeline      Backtesting on MSFT...
+2026-06-14 16:24:24,995  INFO  backtest.engine  Starting backtest: MSFT 2025-12-16→2026-06-14 capital=$10000.0
+2026-06-14 16:24:26,978  INFO  backtest.data  Alpaca: fetched 1026 bars for MSFT
+2026-06-14 16:24:26,978  INFO  backtest.engine  Fetched 1026 bars for MSFT
+2026-06-14 16:24:26,986  INFO  backtest.engine  Warmup period: 60 bars
+2026-06-14 16:24:27,154  INFO  backtest.engine  Backtest complete: 3 trades, return=-1.08%, sharpe=-2.38
+2026-06-14 16:24:28,882  INFO  db.backtest_repo  Saved backtest run_id=6 strategy=9d942193-ab27-40fa-9d33-f78e9967a5dd symbol=MSFT
+2026-06-14 16:24:29,197  INFO  agents.morning_pipeline      MSFT: trades=0 sharpe=0.00 return=0.0%
+2026-06-14 16:24:29,197  INFO  agents.morning_pipeline      Backtesting on QQQ...
+2026-06-14 16:24:32,298  INFO  backtest.engine  Starting backtest: QQQ 2025-12-16→2026-06-14 capital=$10000.0
+2026-06-14 16:24:35,267  INFO  backtest.data  Alpaca: fetched 1103 bars for QQQ
+2026-06-14 16:24:35,269  INFO  backtest.engine  Fetched 1103 bars for QQQ
+2026-06-14 16:24:35,274  INFO  backtest.engine  Warmup period: 60 bars
+2026-06-14 16:24:35,435  INFO  backtest.engine  Backtest complete: 6 trades, return=-1.44%, sharpe=-2.50
+2026-06-14 16:24:36,066  INFO  db.backtest_repo  Saved backtest run_id=7 strategy=9d942193-ab27-40fa-9d33-f78e9967a5dd symbol=QQQ
+2026-06-14 16:24:36,387  INFO  agents.morning_pipeline      QQQ: trades=0 sharpe=0.00 return=0.0%
+2026-06-14 16:24:36,387  INFO  agents.morning_pipeline      Best symbol: SPY (Sharpe=0.00, Return=0.0%)
+2026-06-14 16:24:36,387  INFO  agents.morning_pipeline    Viable on SPY: Sharpe=0.00 Return=0.0% Trades=0
+2026-06-14 16:24:37,039  INFO  agents.morning_pipeline  
+Processing hypothesis 2/2: rsi_oversold_recovery
+2026-06-14 16:24:37,039  INFO  agents.morning_pipeline  Goal: RSI Oversold Recovery Mean Reversion on SPY: Monitor SPY on the 1-hour chart for...
+2026-06-14 16:24:37,039  INFO  agents.morning_pipeline    Creating strategy DSL...
+2026-06-14 16:24:37,039  INFO  agents.strategy_creation_agent  Strategy Creation Agent started — source=hypothesis_agent goal='RSI Oversold Recovery Mean Reversion on SPY: Monitor SPY on ...'
+2026-06-14 16:24:37,039  INFO  agents.strategy_creation_agent  Step 1: Parsing intent...
+2026-06-14 16:24:53,376  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:24:53,376  INFO  agents.strategy_creation_agent  Step 1 complete: SPY RSI Oversold Recovery Mean Reversion (1H) — 4 entry concepts
+2026-06-14 16:24:53,376  INFO  agents.strategy_creation_agent  Step 2: Mapping indicators...
+2026-06-14 16:25:26,577  INFO  httpx  HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-14 16:25:26,577  ERROR  agents.strategy_creation_agent  Agent failed at step intent_parsed: Expecting ',' delimiter: line 149 column 6 (char 5039)
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline  
+======================================================================
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline  Morning Pipeline Complete
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    Regime:         bull_volatile
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    Hypotheses:     2
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    Created:        1
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    Saved:          1
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    Viable:         1
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    Duration:       800s
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline  ======================================================================
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline  -> Check the Registry panel in app.html to review and approve strategies
+2026-06-14 16:25:26,577  INFO  agents.morning_pipeline    - SPY EMA Pullback Confluence Entry: best=SPY sharpe=0.00
+2026-06-14 16:26:41,150  INFO  backtest.engine  Starting backtest: AAPL 2024-01-01→2026-05-31 capital=$10000.0
+2026-06-14 16:26:51,234  INFO  backtest.data  Alpaca: fetched 4430 bars for AAPL
+2026-06-14 16:26:51,242  INFO  backtest.engine  Fetched 4430 bars for AAPL
+2026-06-14 16:26:51,248  INFO  backtest.engine  Warmup period: 200 bars
+2026-06-14 16:26:51,905  INFO  backtest.engine  Backtest complete: 0 trades, return=0.00%, sharpe=0.00
+2026-06-14 16:26:52,977  INFO  db.backtest_repo  Saved backtest run_id=8 strategy=c21056a2-2b30-4038-86f1-b60fd90af98a symbol=AAPL
+2026-06-14 16:27:18,058  INFO  backtest.engine  Starting backtest: NVDA 2024-01-01→2026-05-31 capital=$10000.0
+2026-06-14 16:27:27,222  INFO  backtest.data  Alpaca: fetched 4856 bars for NVDA
+2026-06-14 16:27:27,239  INFO  backtest.engine  Fetched 4856 bars for NVDA
+2026-06-14 16:27:27,255  INFO  backtest.engine  Warmup period: 200 bars
+2026-06-14 16:27:31,465  INFO  backtest.engine  Backtest complete: 1 trades, return=0.10%, sharpe=0.38
+2026-06-14 16:27:31,878  INFO  db.backtest_repo  Saved backtest run_id=9 strategy=c21056a2-2b30-4038-86f1-b60fd90af98a symbol=NVDA
+2026-06-14 21:54:49,884  INFO  db.connection  Neon database connection OK
+2026-06-15 18:27:35,929  INFO  db.connection  Neon database connection OK
+2026-06-15 18:38:40,068  INFO  db.connection  Neon database connection OK
+2026-06-15 18:39:01,011  INFO  backtest.engine  Starting backtest: SPY 2024-01-01→2024-12-31 capital=$10000.0
+2026-06-15 18:39:08,505  INFO  backtest.data  Alpaca: fetched 1968 bars for SPY
+2026-06-15 18:39:08,515  INFO  backtest.engine  Fetched 1968 bars for SPY
+2026-06-15 18:41:39,588  INFO  db.connection  Neon database connection OK
+2026-06-15 18:41:49,502  INFO  backtest.engine  Starting backtest: SPY 2024-01-01→2024-12-31 capital=$10000.0
+2026-06-15 18:41:55,525  INFO  backtest.data  Alpaca: fetched 1968 bars for SPY
+2026-06-15 18:41:55,538  INFO  backtest.engine  Fetched 1968 bars for SPY
+2026-06-15 18:41:56,071  INFO  backtest.engine  Warmup period: 11 bars
+2026-06-15 18:41:57,820  INFO  backtest.engine  Backtest complete: 98 trades, return=-1.51%, sharpe=-2.44
+2026-06-15 18:43:12,621  INFO  backtest.engine  Starting backtest: SPY 2024-01-01→2026-05-31 capital=$10000.0
+2026-06-15 18:43:20,764  INFO  backtest.data  Alpaca: fetched 4965 bars for SPY
+2026-06-15 18:43:20,781  INFO  backtest.engine  Fetched 4965 bars for SPY
+2026-06-15 18:43:22,012  INFO  backtest.engine  Warmup period: 11 bars
+2026-06-15 18:43:26,029  INFO  backtest.engine  Backtest complete: 239 trades, return=-5.55%, sharpe=-3.11
+2026-06-15 18:44:02,578  INFO  backtest.engine  Starting backtest: QQQ 2024-01-01→2026-05-31 capital=$10000.0
+2026-06-15 18:44:11,975  INFO  backtest.data  Alpaca: fetched 5288 bars for QQQ
+2026-06-15 18:44:11,975  INFO  backtest.engine  Fetched 5288 bars for QQQ
+2026-06-15 18:44:12,184  INFO  backtest.engine  Warmup period: 11 bars
+2026-06-15 18:44:12,934  INFO  backtest.engine  Backtest complete: 240 trades, return=-5.78%, sharpe=-2.45
+2026-06-15 18:45:25,562  INFO  backtest.engine  Starting backtest: AAPL 2026-05-01→2026-05-31 capital=$10000.0
+2026-06-15 18:45:27,258  INFO  backtest.data  Alpaca: fetched 167 bars for AAPL
+2026-06-15 18:45:27,266  INFO  backtest.engine  Fetched 167 bars for AAPL
+2026-06-15 18:45:27,395  INFO  backtest.engine  Warmup period: 11 bars
+2026-06-15 18:45:27,547  INFO  backtest.engine  Backtest complete: 7 trades, return=-0.17%, sharpe=-2.13
+2026-06-17 18:57:09,641  INFO  db.connection  Neon database connection OK

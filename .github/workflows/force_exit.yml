@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────────────────────────
+# STEP 3 — Force Exit (11:05 ET = 15:05 UTC)
+# Closes all open option positions for today's symbols.
+# ─────────────────────────────────────────────────────────────────
+name: "Trading — 3. Force Exit (11:05 ET)"
+
+on:
+  schedule:
+    - cron: "5 15 * * 1-5"    # 11:05 ET (UTC-4), weekdays only
+  workflow_dispatch:
+
+jobs:
+  force-exit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Close all positions
+        env:
+          ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+        run: python live_trader.py --mode exit
+
+      - name: Commit final state
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state/
+          git diff --cached --quiet || git commit -m "state: exit $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

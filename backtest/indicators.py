@@ -7,7 +7,15 @@ No look-ahead bias: each value at index i uses only data up to i.
 import pandas as pd
 import numpy as np
 from typing import Union
-
+from .pivot_indicators import (
+    compute_pivot,
+    compute_pivot_r1,
+    compute_pivot_r2,
+    compute_pivot_r3,
+    compute_pivot_s1,
+    compute_pivot_s2,
+    compute_pivot_s3,
+)
 
 # ─── Core indicator functions ─────────────────────────────────────────────────
 
@@ -92,6 +100,13 @@ INDICATOR_FUNCTIONS = {
     "VOLUME":      compute_volume,
     "WEEK52_HIGH": compute_52w_high,
     "WEEK52_LOW":  compute_52w_low,
+    "PIVOT":    compute_pivot,
+    "PIVOT_R1": compute_pivot_r1,
+    "PIVOT_R2": compute_pivot_r2,
+    "PIVOT_R3": compute_pivot_r3,
+    "PIVOT_S1": compute_pivot_s1,
+    "PIVOT_S2": compute_pivot_s2,
+    "PIVOT_S3": compute_pivot_s3,
 }
 
 

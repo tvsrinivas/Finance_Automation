@@ -133,6 +133,76 @@ INDICATOR_SPEC = {
         "valid_operators": [">", "<", ">=", "<="],
         "valid_rhs": ["scalar", "line"],
     },
+"PIVOT": {
+        "label": "Pivot Point",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
+    "PIVOT_R1": {
+        "label": "Pivot R1",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
+    "PIVOT_R2": {
+        "label": "Pivot R2",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
+    "PIVOT_R3": {
+        "label": "Pivot R3",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
+    "PIVOT_S1": {
+        "label": "Pivot S1",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
+    "PIVOT_S2": {
+        "label": "Pivot S2",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
+    "PIVOT_S3": {
+        "label": "Pivot S3",
+        "group": "Pivot Levels",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"},
+        },
+        "output_type": "level",
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["scalar", "line", "level"],
+    },
 }
 
 OPERATORS = {

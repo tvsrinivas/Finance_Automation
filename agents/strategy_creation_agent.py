@@ -102,6 +102,84 @@ INDICATOR_LIBRARY = {
         "valid_operators": [">", "<", ">=", "<="],
         "valid_rhs": ["scalar", "line"],
     },
+    
+    "PIVOT": {
+        "description": "Floor trader pivot point: (Prior High + Prior Low + Prior Close) / 3. The central support/resistance level for the session.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": [
+            "intraday support/resistance",
+            "mean reversion targets",
+            "trend bias (price above pivot = bullish bias)",
+        ],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar", "PIVOT_R1", "PIVOT_R2", "PIVOT_R3", "PIVOT_S1", "PIVOT_S2", "PIVOT_S3"],
+        "notes": "Recalculated each session using prior session's H/L/C. Zero look-ahead.",
+    },
+    "PIVOT_R1": {
+        "description": "Resistance 1: 2 × Pivot − Prior Low. First upside target above pivot.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": ["first profit target for longs", "short entry fade level"],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar", "PIVOT", "PIVOT_R2"],
+        "notes": "Price rarely sustains above R3. Fade moves at R3.",
+    },
+    "PIVOT_R2": {
+        "description": "Resistance 2: Pivot + (Prior High − Prior Low). Second upside target.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": ["second profit target for longs", "strong resistance"],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar", "PIVOT", "PIVOT_R1", "PIVOT_R3"],
+    },
+    "PIVOT_R3": {
+        "description": "Resistance 3: R1 + (Prior High − Prior Low). Extreme upside — markets rarely sustain above here; fade at this level.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": ["extreme resistance", "fade (counter-trend short) trigger"],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar"],
+    },
+    "PIVOT_S1": {
+        "description": "Support 1: 2 × Pivot − Prior High. First downside support below pivot.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": ["first buy-the-dip target", "first profit target for shorts"],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar", "PIVOT", "PIVOT_S2"],
+    },
+    "PIVOT_S2": {
+        "description": "Support 2: Pivot − (Prior High − Prior Low). Second downside support.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": ["deeper support level", "second profit target for shorts"],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar", "PIVOT", "PIVOT_S1", "PIVOT_S3"],
+    },
+    "PIVOT_S3": {
+        "description": "Support 3: S1 − (Prior High − Prior Low). Extreme downside — markets rarely sustain below here; fade at this level.",
+        "params": {
+            "period": {"type": "enum", "options": ["daily", "weekly", "monthly"], "default": "daily"}
+        },
+        "output": "line",
+        "use_cases": ["extreme support", "fade (counter-trend long) trigger"],
+        "valid_operators": [">", "<", ">=", "<=", "cross_above", "cross_below"],
+        "valid_rhs": ["PRICE", "scalar"],
+    },
+
 }
 
 # Common concepts that need library gap warnings

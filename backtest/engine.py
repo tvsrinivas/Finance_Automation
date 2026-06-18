@@ -174,6 +174,8 @@ def _calculate_warmup(indicators_spec: dict) -> int:
             p = params.get("period", 1)
             if ind.get("type") in ("WEEK52_HIGH", "WEEK52_LOW"):
                 p = 1638
+            if not isinstance(p, int):
+                p = 0
         max_period = max(max_period, p)
     return min(max_period + 10, 200)  # cap at 200 for 52w indicators
 
