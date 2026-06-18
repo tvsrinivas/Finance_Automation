@@ -27,12 +27,17 @@ on:
     - cron: "0  15 * * 1-5"   # 11:00 ET
   workflow_dispatch:
 
+permissions:
+  contents: write   # needed for git push back to repo
+
 jobs:
   signal-scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
         with:
           # Pull latest state committed by previous runs
           ref: ${{ github.ref }}
