@@ -71,10 +71,22 @@ LIQUIDITY_PCT     = 0.25
 HAMMER_BODY_PCT   = 0.35
 HAMMER_WICK_RATIO = 2.0
 EXIT_TIME         = dtime(11, 5)
-QTY               = 1          # contracts per signal
-OTM_STEPS         = 0          # 0 = ATM
-MIN_DTE           = 1
+OTM_STEPS         = 0          # 0 = ATM, 1 = 1-strike OTM, etc.
+MIN_DTE           = 1          # minimum days to expiry
 STATE_DIR         = Path("state")
+
+# ── Position sizing ───────────────────────────────────────────────────────────
+# RISK_PER_TRADE_PCT : % of account equity to risk on each signal
+#                      e.g. 2.0 means risk at most 2% of account per trade
+# MAX_SIMULTANEOUS   : hard cap on how many open option positions at once
+#                      across ALL symbols combined
+# MIN_CONTRACTS      : never go below this many contracts (floor)
+# MAX_CONTRACTS      : never exceed this many contracts (ceiling)
+RISK_PER_TRADE_PCT = 2.0    # % of account equity per trade
+MAX_SIMULTANEOUS   = 2       # max open positions across all symbols at once
+MIN_CONTRACTS      = 1       # floor
+MAX_CONTRACTS      = 5       # ceiling
+# ─────────────────────────────────────────────────────────────────────────────
 
 API_KEY    = os.environ["ALPACA_API_KEY"]
 SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
@@ -239,19 +251,67 @@ def _lookup_contract(symbol: str, stock_price: float) -> tuple[str | None, float
 # ═══════════════════════════════════════════════════════════════════════════════
 #  ORDER HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
-def _place_option_order(occ_symbol: str, entry_price: float) -> str | None:
-    """Place a limit buy order for 1 call contract. Returns order ID."""
+def _count_open_positions() -> int:
+    """Count how many of today's symbols currently have an open option position."""
+    count = 0
+    for sym in SYMBOLS:
+        s = load_state(sym)
+        if s.get("in_trade"):
+            count += 1
+    return count
+
+
+def _calc_contracts(ask_price: float) -> int:
+    """
+    Size position based on account equity and RISK_PER_TRADE_PCT.
+
+    Logic:
+      risk_dollars  = account_equity * RISK_PER_TRADE_PCT / 100
+      contracts     = floor(risk_dollars / (ask_price * 100))
+      Then clamp to [MIN_CONTRACTS, MAX_CONTRACTS].
+
+    1 contract = 100 shares, so cost = ask * 100.
+    We treat the full premium as the risk (no stop on options here —
+    the 11:05 hard exit handles the downside).
+    """
+    try:
+        account  = trade_client.get_account()
+        equity   = float(account.equity)
+    except Exception as e:
+        log.warning(f"  Could not fetch account equity: {e} — defaulting to {MIN_CONTRACTS} contract")
+        return MIN_CONTRACTS
+
+    risk_dollars = equity * RISK_PER_TRADE_PCT / 100.0
+    cost_per_contract = ask_price * 100.0
+
+    if cost_per_contract <= 0:
+        return MIN_CONTRACTS
+
+    raw = int(risk_dollars / cost_per_contract)
+    qty = max(MIN_CONTRACTS, min(MAX_CONTRACTS, raw))
+
+    log.info(f"  Sizing: equity=${equity:,.0f}  risk={RISK_PER_TRADE_PCT}%"
+             f"  risk$=${risk_dollars:.0f}  ask=${ask_price:.2f}/contract"
+             f"  raw={raw}  final_qty={qty}  "
+             f"[clamped to {MIN_CONTRACTS}–{MAX_CONTRACTS}]")
+    return qty
+
+
+def _place_option_order(occ_symbol: str, entry_price: float, qty: int) -> str | None:
+    """Place a limit buy order for `qty` call contracts. Returns order ID."""
     try:
         order = trade_client.submit_order(
             LimitOrderRequest(
                 symbol=occ_symbol,
-                qty=QTY,
+                qty=qty,
                 side=OrderSide.BUY,
                 time_in_force=TimeInForce.DAY,
                 limit_price=round(entry_price * 1.02, 2),  # 2% above ask for fill
             )
         )
-        log.info(f"  Order placed: {order.id}  {occ_symbol}  limit={entry_price:.2f}")
+        log.info(f"  Order placed: {order.id}  {occ_symbol}  "
+                 f"qty={qty}  limit={entry_price:.2f}  "
+                 f"total_cost=${entry_price * qty * 100:,.0f}")
         return str(order.id)
     except APIError as e:
         log.error(f"  Order failed for {occ_symbol}: {e}")
@@ -413,6 +473,13 @@ def run_scan():
                     log.info(f"  {symbol}: SIGNAL {signal} @ {t}  "
                              f"entry={stock_price:.2f}  sl={l:.2f}  target={a_high:.2f}")
 
+                    # ── Simultaneous position cap ──────────────────────────
+                    open_now = _count_open_positions()
+                    if open_now >= MAX_SIMULTANEOUS:
+                        log.info(f"  {symbol}: MAX_SIMULTANEOUS={MAX_SIMULTANEOUS} reached "
+                                 f"({open_now} open) — skipping signal")
+                        break
+
                     # Look up option contract
                     occ_symbol, strike, expiry = _lookup_contract(symbol, stock_price)
                     if occ_symbol is None:
@@ -422,7 +489,7 @@ def run_scan():
                     log.info(f"  {symbol}: contract={occ_symbol}  "
                              f"strike={strike}  expiry={expiry}")
 
-                    # Get current option ask price
+                    # ── Get current option ask price ───────────────────────
                     try:
                         from alpaca.data.requests import OptionLatestQuoteRequest
                         q_req  = OptionLatestQuoteRequest(symbol_or_symbols=occ_symbol)
@@ -431,15 +498,19 @@ def run_scan():
                         if ask <= 0:
                             ask = float(quotes[occ_symbol].bid_price) * 1.05
                     except Exception as e:
-                        log.warning(f"  {symbol}: could not get option quote: {e} — using stock signal price estimate")
+                        log.warning(f"  {symbol}: could not get option quote: {e} — using fallback")
                         ask = round(max(0.50, stock_price * 0.01), 2)
 
-                    # Place order
-                    order_id = _place_option_order(occ_symbol, ask)
+                    # ── Calculate position size ────────────────────────────
+                    qty = _calc_contracts(ask)
+
+                    # ── Place order ────────────────────────────────────────
+                    order_id = _place_option_order(occ_symbol, ask, qty)
                     if order_id:
                         state["in_trade"]    = True
                         state["occ_symbol"]  = occ_symbol
                         state["order_id"]    = order_id
+                        state["qty"]         = qty
                         state["signal"]      = signal
                         state["signal_time"] = str(t)
                         state["stock_entry"] = round(stock_price, 4)
