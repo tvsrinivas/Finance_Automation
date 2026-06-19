@@ -7,7 +7,7 @@ name: "Trading — 1. Market Open (9:40 ET)"
 
 on:
   schedule:
-    - cron: "40 9 * * 1-5"
+    - cron: "30 9 * * 1-5"
       timezone: "America/New_York"
   workflow_dispatch:
 
