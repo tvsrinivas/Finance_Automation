@@ -1,9 +1,9 @@
 # ─────────────────────────────────────────────────────────────────
-# STEP 1 — Market Open (9:40 ET)
+# STEP 1 — Market Open (9:30 ET)
 # timezone key handles EDT/EST DST automatically.
 # Shifted to 9:40 to account for GitHub runner delay + IEX feed lag.
 # ─────────────────────────────────────────────────────────────────
-name: "Trading — 1. Market Open (9:40 ET)"
+name: "Trading — 1. Market Open (9:30 ET)"
 
 on:
   schedule:
