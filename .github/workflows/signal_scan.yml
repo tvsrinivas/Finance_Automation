@@ -1,34 +1,51 @@
 # ─────────────────────────────────────────────────────────────────
-# STEP 2 — Signal Scan (every 5 min, 9:40–11:00 ET)
-# Looks for Hammer / Bullish Engulfing below b_low.
-# Places option order when signal fires.
-# 9:40 ET = 13:40 UTC  →  11:00 ET = 15:00 UTC
+# STEP 2 — Signal Scan (every 5 min, 9:45–11:00 ET)
+# Starts at 9:45 to ensure market_open has committed state first.
+# timezone key handles EDT/EST DST automatically.
 # ─────────────────────────────────────────────────────────────────
 name: "Trading — 2. Signal Scan (5 min)"
 
 on:
   schedule:
-    - cron: "40 13 * * 1-5"   # 9:40 ET
-    - cron: "45 13 * * 1-5"   # 9:45 ET
-    - cron: "50 13 * * 1-5"   # 9:50 ET
-    - cron: "55 13 * * 1-5"   # 9:55 ET
-    - cron: "0  14 * * 1-5"   # 10:00 ET
-    - cron: "5  14 * * 1-5"   # 10:05 ET
-    - cron: "10 14 * * 1-5"   # 10:10 ET
-    - cron: "15 14 * * 1-5"   # 10:15 ET
-    - cron: "20 14 * * 1-5"   # 10:20 ET
-    - cron: "25 14 * * 1-5"   # 10:25 ET
-    - cron: "30 14 * * 1-5"   # 10:30 ET
-    - cron: "35 14 * * 1-5"   # 10:35 ET
-    - cron: "40 14 * * 1-5"   # 10:40 ET
-    - cron: "45 14 * * 1-5"   # 10:45 ET
-    - cron: "50 14 * * 1-5"   # 10:50 ET
-    - cron: "55 14 * * 1-5"   # 10:55 ET
-    - cron: "0  15 * * 1-5"   # 11:00 ET
+    - cron: "45 9  * * 1-5"
+      timezone: "America/New_York"   # 9:45 ET
+    - cron: "50 9  * * 1-5"
+      timezone: "America/New_York"   # 9:50 ET
+    - cron: "55 9  * * 1-5"
+      timezone: "America/New_York"   # 9:55 ET
+    - cron: "0  10 * * 1-5"
+      timezone: "America/New_York"   # 10:00 ET
+    - cron: "5  10 * * 1-5"
+      timezone: "America/New_York"   # 10:05 ET
+    - cron: "10 10 * * 1-5"
+      timezone: "America/New_York"   # 10:10 ET
+    - cron: "15 10 * * 1-5"
+      timezone: "America/New_York"   # 10:15 ET
+    - cron: "20 10 * * 1-5"
+      timezone: "America/New_York"   # 10:20 ET
+    - cron: "25 10 * * 1-5"
+      timezone: "America/New_York"   # 10:25 ET
+    - cron: "30 10 * * 1-5"
+      timezone: "America/New_York"   # 10:30 ET
+    - cron: "35 10 * * 1-5"
+      timezone: "America/New_York"   # 10:35 ET
+    - cron: "40 10 * * 1-5"
+      timezone: "America/New_York"   # 10:40 ET
+    - cron: "45 10 * * 1-5"
+      timezone: "America/New_York"   # 10:45 ET
+    - cron: "50 10 * * 1-5"
+      timezone: "America/New_York"   # 10:50 ET
+    - cron: "55 10 * * 1-5"
+      timezone: "America/New_York"   # 10:55 ET
+    - cron: "0  11 * * 1-5"
+      timezone: "America/New_York"   # 11:00 ET
   workflow_dispatch:
 
 permissions:
-  contents: write   # needed for git push back to repo
+  contents: write
+
+env:
+  TZ: America/New_York
 
 jobs:
   signal-scan:
@@ -49,6 +66,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Show runner time (ET)
+        run: echo "Runner time (ET) = $(date)"
+
       - name: Run signal scan
         env:
           ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
@@ -60,5 +80,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add state/
-          git diff --cached --quiet || git commit -m "state: signal scan $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git diff --cached --quiet || git commit -m "state: signal scan $(date +'%Y-%m-%d %H:%M ET')"
           git push

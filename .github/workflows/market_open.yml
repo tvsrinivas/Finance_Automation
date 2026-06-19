@@ -1,17 +1,21 @@
 # ─────────────────────────────────────────────────────────────────
-# STEP 1 — Market Open (9:35 ET = 13:35 UTC)
-# Fetches ATR and checks first candle for liquidity.
-# Runs once per day, Mon–Fri.
+# STEP 1 — Market Open (9:40 ET)
+# timezone key handles EDT/EST DST automatically.
+# Shifted to 9:40 to account for GitHub runner delay + IEX feed lag.
 # ─────────────────────────────────────────────────────────────────
-name: "Trading — 1. Market Open (9:35 ET)"
+name: "Trading — 1. Market Open (9:40 ET)"
 
 on:
   schedule:
-    - cron: "35 13 * * 1-5"   # 9:35 ET (UTC-4), weekdays only
-  workflow_dispatch:            # allow manual trigger for testing
+    - cron: "40 9 * * 1-5"
+      timezone: "America/New_York"
+  workflow_dispatch:
 
 permissions:
-  contents: write   # needed for git push back to repo
+  contents: write
+
+env:
+  TZ: America/New_York
 
 jobs:
   market-open:
@@ -31,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Show runner time (ET)
+        run: echo "Runner time (ET) = $(date)"
+
       - name: Run market open (ATR + liquidity candle)
         env:
           ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
@@ -42,5 +49,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add state/
-          git diff --cached --quiet || git commit -m "state: market open $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git diff --cached --quiet || git commit -m "state: market open $(date +'%Y-%m-%d %H:%M ET')"
           git push
