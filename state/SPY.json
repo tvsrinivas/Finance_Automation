@@ -1,5 +1,6 @@
 {
   "date": "2026-06-18",
   "symbol": "SPY",
-  "skip": "error: Invalid leading whitespace, reserved character(s), or return character(s) in header value: 'PKCPJL6ZSDENHA2QDCINXWXPWG\\n'"
+  "atr": 9.6968,
+  "skip": "no intraday data"
 }
