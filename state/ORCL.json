@@ -1,6 +1,5 @@
 {
-  "date": "2026-06-24",
+  "date": "2026-06-25",
   "symbol": "ORCL",
-  "atr": 12.0511,
-  "skip": "no intraday data"
+  "skip": "error: <html>\r\n<head><title>401 Authorization Required</title></head>\r\n<body>\r\n<center><h1>401 Authorization Required</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
 }
